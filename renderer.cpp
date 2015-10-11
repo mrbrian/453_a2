@@ -31,6 +31,7 @@ void Renderer::set_perspective(double fov, double aspect,
 void Renderer::reset_view()
 {
     // Fill me in!
+       m_view = *new Matrix4x4();
 }
 
 // called once by Qt GUI system, to allow initialization for OpenGL requirements

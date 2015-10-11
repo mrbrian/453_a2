@@ -20,13 +20,22 @@ public:
 
 protected:
 
+private slots:
+    void setMode(QAction * action);
 private:
 	// The main OpenGL area
     Renderer * renderer;
 
 	// Menu items and actions
-	QMenu * mFileMenu;
-	QAction * mQuitAction;
+    QMenu * mFileMenu;
+    QAction * mResetAction;
+    QAction * mQuitAction;
+
+    QActionGroup * mModeGroup;
+    QMenu * mModeMenu;
+    QAction * mRotateAction;
+    QAction * mTransAction;
+    QAction * mPerspAction;
 
 	// helper function for creating actions
 	void createActions();

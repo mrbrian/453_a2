@@ -72,8 +72,10 @@ protected:
 private:
 
 	// *** Fill me in ***
-	// You will want to declare some more matrices here
-	Matrix4x4 m_projection;
+    // You will want to declare some more matrices here
+    Matrix4x4 m_model;
+    Matrix4x4 m_view;
+    Matrix4x4 m_projection;
 };
 
 #endif

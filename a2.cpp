@@ -7,6 +7,28 @@ Matrix4x4 rotation(double angle, char axis)
 {
   Matrix4x4 r;
   // Fill me in!
+  switch (axis)
+  {
+    case 'x':
+      r[1][1] = cos(angle);
+      r[1][2] = -sin(angle);
+      r[2][1] = sin(angle);
+      r[2][2] = cos(angle);
+      break;
+    case 'y':
+      r[0][0] = cos(angle);
+      r[0][2] = -sin(angle);
+      r[2][0] = sin(angle);
+      r[2][2] = cos(angle);
+      break;
+    case 'z':
+      r[0][0] = cos(angle);
+      r[0][1] = -sin(angle);
+      r[1][0] = sin(angle);
+      r[1][1] = cos(angle);
+      break;
+  }
+
   return r;
 }
 
@@ -15,6 +37,10 @@ Matrix4x4 translation(const Vector3D& displacement)
 {
   Matrix4x4 t;
   // Fill me in!
+  t[0][3] = displacement[0];
+  t[1][3] = displacement[1];
+  t[2][3] = displacement[2];
+
   return t;
 }
 
@@ -23,5 +49,10 @@ Matrix4x4 scaling(const Vector3D& scale)
 {
   Matrix4x4 s;
   // Fill me in!
+  s[0][0] = scale[0];
+  s[1][1] = scale[1];
+  s[2][2] = scale[2];
+  s[3][3] = 0;
+
   return s;
 }
