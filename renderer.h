@@ -71,8 +71,23 @@ protected:
 
 private:
 
+    void drawGnomon();
+
 	// *** Fill me in ***
     // You will want to declare some more matrices here
+    Point3D * points;
+    Point3D * g_world;
+
+    Point3D * viewport;
+
+    Vector3D r_model;
+    Vector3D s_model;
+    Vector3D t_model;
+
+    Vector3D r_view;
+    Vector3D s_view;
+    Vector3D t_view;
+
     Matrix4x4 m_model;
     Matrix4x4 m_view;
     Matrix4x4 m_projection;

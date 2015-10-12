@@ -71,9 +71,9 @@ int rotateMatrix_Y()
 int rotateMatrix_Z()
 {
     Matrix4x4 rot = rotation(M_PI / 2, 'z');
-    Vector3D result = *new Vector3D(-1, 0, 1);
+    Vector3D result = *new Vector3D(-1, 0, 2);
     result = rot * result;
-    Vector3D expected = *new Vector3D(0, -1, 1);
+    Vector3D expected = *new Vector3D(0, -1, 2);
 
     for (int i = 0; i < 3; i++)
         if (compare(result[i], expected[i]))
@@ -82,13 +82,37 @@ int rotateMatrix_Z()
     return 0;
 }
 
-int perspMatrix()
+Matrix4x4 perspective(double fov, double aspect,
+                             double near, double far)
 {
+    Matrix4x4 m_projection;
+    // Fill me in!
+    m_projection[0][0] = 1 / (aspect * atan(fov / 2));
+    m_projection[1][1] = 1 / atan(fov / 2);
+    m_projection[2][2] = -(far + near) / (far - near);
+    m_projection[2][3] = -2 * (far * near) / (far - near);
+    m_projection[3][2] = 1;
+    m_projection[3][3] = 0;
 
+    return m_projection;
 }
 
-int tests()
+int perspMatrix()
 {
+    Matrix4x4 p = perspective(30.0 / 180 * M_PI, 1.33, 1, 10000);
+    Vector3D result = *new Vector3D(1,0,10);
+    Vector3D expected = *new Vector3D();
+    result = p * result;
+
+    return 0;
+}
+
+float tests()
+{
+    double f = atan(1);
+//    return f;
+    if (perspMatrix())
+        return 1;
     if (rotateMatrix_Z())
         return 1;
     if (rotateMatrix_Y())
