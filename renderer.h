@@ -13,7 +13,10 @@ class Renderer : public QOpenGLWidget, protected QOpenGLFunctions {
     // informs the qmake that a Qt moc_* file will need to be generated
     Q_OBJECT
 
-public:
+public:    
+    // draw mode types
+    enum EditMode {VIEW, MODEL, PERSP};
+
     // constructor
     Renderer(QWidget *parent = 0);
 
@@ -75,16 +78,24 @@ private:
     void drawGnomon();
     void setupViewport();
     void drawViewport();
+    void move(int x);
+    void update_view();
 
 	// *** Fill me in ***
     // You will want to declare some more matrices here
-    Point3D * g_box;
+    Point3D * g_box_verts;
+    int     * g_box_edges;
     Point3D * g_world;
+
+    EditMode editMode;
 
     int viewport_left;
     int viewport_right;
     int viewport_top;
     int viewport_bottom;
+
+    int p_mouseX;
+    int p_mouseY;
 
     Vector3D r_model;
     Vector3D s_model;
