@@ -83,14 +83,14 @@ int rotateMatrix_Z()
 }
 
 Matrix4x4 perspective(double fov, double aspect,
-                             double near, double far)
+                             double n, double f)
 {
     Matrix4x4 m_projection;
     // Fill me in!
-    m_projection[0][0] = 1 / (aspect * atan(fov / 2));
-    m_projection[1][1] = 1 / atan(fov / 2);
-    m_projection[2][2] = -(far + near) / (far - near);
-    m_projection[2][3] = -2 * (far * near) / (far - near);
+    m_projection[0][0] = 1 / (aspect * tan(fov / 2));
+    m_projection[1][1] = 1 / (aspect * tan(fov / 2));
+    m_projection[2][2] = (f + n) / (f - n);
+    m_projection[2][3] = -2 * (f * n) / (f - n);
     m_projection[3][2] = 1;
     m_projection[3][3] = 0;
 
@@ -99,17 +99,24 @@ Matrix4x4 perspective(double fov, double aspect,
 
 int perspMatrix()
 {
-    Matrix4x4 p = perspective(30.0 / 180 * M_PI, 1.33, 1, 10000);
-    Vector3D result = *new Vector3D(1,0,10);
-    Vector3D expected = *new Vector3D();
+    Matrix4x4 p = perspective(90.0 / 180 * M_PI, 1, 1, 100);
+    Point3D result = *new Point3D(10,0,100);
+    float d = 10;
+    Point3D expected = *new Point3D(0,0,0);
     result = p * result;
+
+    result = *new Point3D(
+        result[0] / d,
+        result[1] / d,
+        result[2] / d
+    );
 
     return 0;
 }
 
 float tests()
 {
-    double f = atan(1);
+    double f = tan(M_PI_4);
 //    return f;
     if (perspMatrix())
         return 1;
@@ -152,9 +159,15 @@ Window::Window(QWidget * parent) :
 
     // Setup the mode menu
     mModeMenu = menuBar()->addMenu(tr("&Mode"));
-    mModeMenu->addAction(mRotateAction);
-    mModeMenu->addAction(mTransAction);
-    mModeMenu->addAction(mPerspAction);
+    mViewMenu = mModeMenu->addMenu(tr("&View"));
+    mModelMenu = mModeMenu->addMenu(tr("&Model"));
+    mViewMenu->addAction(mVRotateAction);
+    mViewMenu->addAction(mVTransAction);
+    mViewMenu->addAction(mPerspAction);
+
+    mModelMenu->addAction(mMRotateAction);
+    mModelMenu->addAction(mMTransAction);
+    mModelMenu->addAction(mScaleAction);
 }
 
 // destructor
@@ -182,24 +195,48 @@ void Window::createActions()
     //connect(mModeGroup, SIGNAL(triggered(QAction *)), this, SLOT(setMode(QAction *)));
     mModeGroup->setExclusive(true);
 
-    mRotateAction = new QAction(tr("&Rotate"), this);
-    mRotateAction->setShortcut(QKeySequence(Qt::Key_O));
-    mRotateAction->setStatusTip(tr("Rotates the view"));
-    mModeGroup->addAction(mRotateAction);
+    mVRotateAction = new QAction(tr("&Rotate"), this);
+    mVRotateAction->setShortcut(QKeySequence(Qt::Key_O));
+    mVRotateAction->setStatusTip(tr("Rotates the view"));
+    mModeGroup->addAction(mVRotateAction);
 
-    mTransAction = new QAction(tr("&Translate"), this);
-    mTransAction->setShortcut(QKeySequence(Qt::Key_N));
-    mTransAction->setStatusTip(tr("Translates the view"));
-    mModeGroup->addAction(mTransAction);
+    mVTransAction = new QAction(tr("&Translate"), this);
+    mVTransAction->setShortcut(QKeySequence(Qt::Key_N));
+    mVTransAction->setStatusTip(tr("Translates the view"));
+    mModeGroup->addAction(mVTransAction);
 
     mPerspAction = new QAction(tr("&Perspective"), this);
     mPerspAction->setShortcut(QKeySequence(Qt::Key_P));
     mPerspAction->setStatusTip(tr("Adjust the perspective"));
     mModeGroup->addAction(mPerspAction);
 
-    mRotateAction->setCheckable(true);
-    mTransAction->setCheckable(true);
+    mMRotateAction = new QAction(tr("&Rotate"), this);
+    mMRotateAction->setShortcut(QKeySequence(Qt::Key_R));
+    mMRotateAction->setStatusTip(tr("Rotates the model"));
+    mModeGroup->addAction(mMRotateAction);
+
+    mMTransAction = new QAction(tr("&Translate"), this);
+    mMTransAction->setShortcut(QKeySequence(Qt::Key_T));
+    mMTransAction->setStatusTip(tr("Translates the model"));
+    mModeGroup->addAction(mMTransAction);
+
+    mScaleAction = new QAction(tr("&Scale"), this);
+    mScaleAction->setShortcut(QKeySequence(Qt::Key_S));
+    mScaleAction->setStatusTip(tr("Scale the model "));
+    mModeGroup->addAction(mScaleAction);
+
+    mVRotateAction->setCheckable(true);
+    mVTransAction->setCheckable(true);
     mPerspAction->setCheckable(true);
+
+    mMRotateAction->setCheckable(true);
+    mMTransAction->setCheckable(true);
+    mScaleAction->setCheckable(true);
+
+    mViewportAction = new QAction(tr("&Viewport"), this);
+    mViewportAction->setShortcut(QKeySequence(Qt::Key_S));
+    mViewportAction->setStatusTip(tr("Adjust the perspective"));
+    mModeGroup->addAction(mViewportAction);
 }
 
 void Window::setMode(QAction * action)

@@ -31,7 +31,7 @@ public:
 	// Set the parameters of the current perspective projection using
 	// the semantics of gluPerspective().
 	void set_perspective(double fov, double aspect,
-		       double near, double far);
+               double near, double far);
 
 	// Restore all the transforms and perspective parameters to their
 	// original state. Set the viewport to its initial size.
@@ -72,13 +72,18 @@ protected:
 private:
 
     void drawGnomon();
+    void setupViewport();
+    void drawViewport();
 
 	// *** Fill me in ***
     // You will want to declare some more matrices here
     Point3D * points;
     Point3D * g_world;
 
-    Point3D * viewport;
+    int viewport_left;
+    int viewport_right;
+    int viewport_top;
+    int viewport_bottom;
 
     Vector3D r_model;
     Vector3D s_model;

@@ -33,10 +33,17 @@ private:
 
     QActionGroup * mModeGroup;
     QMenu * mModeMenu;
-    QAction * mRotateAction;
-    QAction * mTransAction;
+    QMenu * mModelMenu;
+    QMenu * mViewMenu;
+    QAction * mVRotateAction;
+    QAction * mVTransAction;
     QAction * mPerspAction;
 
+    QAction * mMRotateAction;
+    QAction * mMTransAction;
+    QAction * mScaleAction;
+
+    QAction * mViewportAction;
 	// helper function for creating actions
 	void createActions();
 };
