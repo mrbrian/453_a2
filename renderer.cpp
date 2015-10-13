@@ -15,9 +15,21 @@ Renderer::Renderer(QWidget *parent)
         *new Point3D(0,0,0.5)
     };
 
-    points = new Point3D[8];
+    g_box = new Point3D[9]{
+        *new Point3D(-1,1,-1),
+        *new Point3D(-1,1,1),
+        *new Point3D(1,1,1),
+        *new Point3D(1,1,-1),
+        *new Point3D(-1,1,-1),
+
+        *new Point3D(-1,-1,-1),
+        *new Point3D(-1,-1,1),
+        *new Point3D(1,-1,1),
+        *new Point3D(-1,-1,1)
+    };
+
     float aspect = (float)width() / height();
-    set_perspective(30.0 / 180 * M_PI, aspect, 0.1, 10000);
+    set_perspective(30.0 / 180 * M_PI, aspect, 0.1, 100);
     reset_view();
 }
 
@@ -50,8 +62,8 @@ void Renderer::reset_view()
 {
     // Fill me in!
        m_view = *new Matrix4x4();
-       m_view = rotation(45.0/180*M_PI, 'x') * rotation(M_PI_4, 'y');
-       m_view = translation(*new Vector3D(0,0,40)) * m_view;
+    //   m_view = rotation(45.0/180*M_PI, 'x') * rotation(M_PI_4, 'y');
+       m_view = translation(*new Vector3D(0,0,10)) * m_view;
 }
 
 void Renderer::setupViewport()
@@ -80,7 +92,7 @@ void Renderer::paintGL()
 	/* A few of lines are drawn below to show how it's done. */
 
     set_colour(Colour(0.1, 0.1, 0.1));
-
+/*
 	draw_line(Point2D(0.1*width(), 0.1*height()), 
 		Point2D(0.9*width(), 0.9*height()));
 	draw_line(Point2D(0.9*width(), 0.1*height()),
@@ -89,10 +101,11 @@ void Renderer::paintGL()
     draw_line(Point2D(0.1*width(), 0.1*height()),
 		Point2D(0.2*width(), 0.1*height()));
 	draw_line(Point2D(0.1*width(), 0.1*height()), 
-		Point2D(0.1*width(), 0.2*height()));
+        Point2D(0.1*width(), 0.2*height()));*/
 
     drawViewport();
     drawGnomon();
+    drawBox();
 	draw_complete();
 	    
 }
@@ -168,6 +181,30 @@ void Renderer::drawGnomon()
 
         b[0] = p[0] * width() /dist + width() / 2;
         b[1] = -p[1] * height() / dist + height() / 2;
+
+        draw_line(a, b);
+    }
+}
+
+void Renderer::drawBox()
+{
+    for (int i = 0; i < 4; i++)
+    {
+        Point2D a, b;
+        Point3D p1 = m_view * m_model * g_box[i];
+        double dist1 = p1[2];
+        p1 = m_projection * p1;
+
+        a[0] =  p1[0] * width() / dist1 + width() / 2;
+        a[1] = -p1[1] * height() / dist1 + height() / 2;
+
+        set_colour(Colour(0.1, 0.1, 0.1));
+        Point3D p2 = m_view * m_model * g_box[i + 1];
+        double dist2 = p2[2];
+
+        p2 = m_projection * p2;
+        b[0] =  p2[0] * width() / dist2 + width() / 2;
+        b[1] = -p2[1] * height() / dist2 + height() / 2;
 
         draw_line(a, b);
     }

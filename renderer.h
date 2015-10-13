@@ -71,13 +71,14 @@ protected:
 
 private:
 
+    void drawBox();
     void drawGnomon();
     void setupViewport();
     void drawViewport();
 
 	// *** Fill me in ***
     // You will want to declare some more matrices here
-    Point3D * points;
+    Point3D * g_box;
     Point3D * g_world;
 
     int viewport_left;
