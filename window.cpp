@@ -146,6 +146,7 @@ Window::Window(QWidget * parent) :
 	// Create the main drawing object
 	renderer = new Renderer();
 	renderer->setMinimumSize(300, 300);
+
 	setCentralWidget(renderer);
 
 	// Create the actions to be used by the menus
@@ -168,6 +169,13 @@ Window::Window(QWidget * parent) :
     mModelMenu->addAction(mMRotateAction);
     mModelMenu->addAction(mMTransAction);
     mModelMenu->addAction(mScaleAction);
+
+/*
+    QWidget * mainWidget = new QWidget();
+    mainWidget->setLayout(layout);
+
+    modeLabel = new QLabel(this);
+    layout->addWidget(modeLabel);*/
 }
 
 // destructor

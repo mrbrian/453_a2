@@ -3,7 +3,8 @@
 
 #include <QMainWindow>
 #include <QMenu>
-
+#include <QLabel>
+#include <QVBoxLayout>
 #include "renderer.h"
 
 class Window : public QMainWindow
@@ -44,7 +45,10 @@ private:
     QAction * mScaleAction;
 
     QAction * mViewportAction;
-	// helper function for creating actions
+
+    QLabel * modeLabel;
+
+    // helper function for creating actions
 	void createActions();
 };
 
