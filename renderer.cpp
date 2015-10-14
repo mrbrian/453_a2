@@ -8,6 +8,8 @@
 Renderer::Renderer(QWidget *parent)
 	: QOpenGLWidget(parent)
 {
+    editMode = VIEW;
+
     g_world = new Point3D[4]{
         *new Point3D(0,0,0),
         *new Point3D(0.5,0,0),
@@ -61,9 +63,17 @@ void Renderer::set_perspective(double fov, double aspect,
 void Renderer::reset_view()
 {
     // Fill me in!
+    t_view = Vector3D(0, 0, 10);
+    m_view = *new Matrix4x4();
+    //m_view = rotation(45.0/180*M_PI, 'x') * rotation(M_PI_4, 'y');
+    m_view = translation(t_view) * m_view;
+}
+
+void Renderer::update_view()
+{
+    // Fill me in!
        m_view = *new Matrix4x4();
-    //   m_view = rotation(45.0/180*M_PI, 'x') * rotation(M_PI_4, 'y');
-       m_view = translation(*new Vector3D(0,0,10)) * m_view;
+       m_view = translation(t_view) * m_view;
 }
 
 void Renderer::setupViewport()
@@ -155,7 +165,8 @@ void Renderer::resizeGL(int width, int height)
 void Renderer::mousePressEvent(QMouseEvent * event)
 {
     QTextStream cout(stdout);
-    cout << "Stub: Button " << event->button() << " pressed.\n";
+    cout << "Stub: Button " << event->button() << " pressed.\n";    
+    p_mouseX = event->x();
 }
 
 
@@ -171,7 +182,9 @@ void Renderer::mouseReleaseEvent(QMouseEvent * event)
 void Renderer::mouseMoveEvent(QMouseEvent * event)
 {
     QTextStream cout(stdout);
-    cout << "Stub: Motion at " << event->x() << ", " << event->y() << ".\n";
+    cout << "Stub: Motion at " << event->x() << ", " << event->y() << ".\n";    
+    move(event->x() - p_mouseX);
+    p_mouseX = event->x();
 }
 
 void Renderer::drawViewport()
@@ -219,18 +232,22 @@ void Renderer::drawGnomon()
 
 void Renderer::drawBox()
 {
-    for (int i = 0; i < 4; i++)
+   /* int NUM_EDGES = 24;
+    for (int i = 0; i < NUM_EDGES; i += 2)
     {
         Point2D a, b;
-        Point3D p1 = m_view * m_model * g_box[i];
+        int vertIdx_1 = g_box_edges[i];
+        int vertIdx_2 = g_box_edges[i + 1];
+        Point3D p1 = m_view * m_model * g_box_verts[vertIdx_1];
         double dist1 = p1[2];
+
         p1 = m_projection * p1;
 
         a[0] =  p1[0] * width() / dist1 + width() / 2;
         a[1] = -p1[1] * height() / dist1 + height() / 2;
 
         set_colour(Colour(0.1, 0.1, 0.1));
-        Point3D p2 = m_view * m_model * g_box[i + 1];
+        Point3D p2 = m_view * m_model * g_box_verts[vertIdx_2];
         double dist2 = p2[2];
 
         p2 = m_projection * p2;
@@ -238,5 +255,13 @@ void Renderer::drawBox()
         b[1] = -p2[1] * height() / dist2 + height() / 2;
 
         draw_line(a, b);
-    }
+    }*/
+}
+
+void Renderer::move(int x)
+{
+    float delta = (float)x / 100;
+    t_view = Vector3D(t_view[0] + delta, t_view[1], t_view[2]);
+    update_view();
+    invalidate();
 }
