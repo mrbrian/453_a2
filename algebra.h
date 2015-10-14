@@ -517,11 +517,4 @@ private:
     Matrix4x4 transform_;
 };
 
-class Gnomon
-{
-public:
-    Gnomon();
-    ~Gnomon();
-};
-
-#endif // ALGEBRA_H
+#endif

@@ -19,7 +19,6 @@ Renderer::Renderer(QWidget *parent)
 
     update_projection();
     reset_view();
-    s_model = Vector3D(1,1,1);
 }
 
 // destructor
@@ -50,13 +49,10 @@ void Renderer::set_perspective(double fov, double aspect,
 void Renderer::reset_view()
 {
     // Fill me in!
-    t_view = Vector3D(0, 0, 10);
-    r_view = Vector3D(0,0,0);
+    Vector3D t_view = Vector3D(0, 0, 10);
 
-    r_model = Vector3D(0,0,0);
-    t_model = Vector3D(0,0,0);
-    s_model = Vector3D(1,1,1);
     m_cube.resetTransform();
+    m_cubeGnomon = Matrix4x4();
 
     m_view = *new Matrix4x4();
     //m_view = rotation(45.0/180*M_PI, 'x') * rotation(M_PI_4, 'y');
@@ -67,11 +63,11 @@ void Renderer::reset_view()
 void Renderer::update_view()
 {
     // Fill me in!
-       m_view = *new Matrix4x4();
+/*       m_view = *new Matrix4x4();
        m_view = rotation(r_view[2], 'z')
                * rotation(r_view[1], 'y')
                * rotation(r_view[0], 'x')
-               * translation(t_view) * m_view;
+               * translation(t_view) * m_view;*/
 }
 
 void Renderer::setupViewport()
@@ -112,8 +108,7 @@ void Renderer::paintGL()
     Matrix4x4 m;
     drawGnomon(&m);
     drawBox();
-    m = m_cube.getTransform();
-    drawGnomon(&m);
+    drawGnomon(&m_cubeGnomon);
 	draw_complete();
 	    
 }
@@ -151,7 +146,6 @@ void Renderer::mouseReleaseEvent(QMouseEvent * event)
     mouseButtons = event->buttons();
 }
 
-
 // override mouse move event
 void Renderer::mouseMoveEvent(QMouseEvent * event)
 {
@@ -182,7 +176,7 @@ void Renderer::drawGnomon(Matrix4x4 *model_matrix)
         Colour(0,0,1)
     };
 
-    Point3D p = m_view * *model_matrix * g_world[0];
+    Point3D p = m_view * (*model_matrix) * g_world[0];
     double dist = p[2];
     p = m_projection * p;
     Point2D a, b;
@@ -197,7 +191,10 @@ void Renderer::drawGnomon(Matrix4x4 *model_matrix)
         dist = p[2];
         p = m_projection * p;
 
-        b[0] = p[0] * width() /dist + width() / 2;
+        b[0] = p[0] * width() / dist + width() / 2;
+        b[1] = -p[1] * height() / dist + height() / 2;
+
+        b[0] = p[0] * width() / dist + width() / 2;
         b[1] = -p[1] * height() / dist + height() / 2;
 
         draw_line(a, b);
@@ -251,70 +248,52 @@ void Renderer::drawBox()
 
 void Renderer::move(int x)
 {
-    Vector3D *v, temp;
+    Vector3D temp;
     float delta = (float)x / 100;
-
-    switch(editMode)
-    {
-    case VIEW_R:
-        v = &r_view;
-        break;
-    case VIEW_T:
-        v = &t_view;
-        break;
-    case VIEW_P:
-        v = &p_view;
-        break;
-    case MODEL_R:
-        v = &r_model;
-        break;
-    case MODEL_S:
-        v = &s_model;
-        break;
-    case MODEL_T:
-        v = &t_model;
-        break;
-    case VIEWPORT:
-        break;
-    }
-
-    temp = Vector3D(*v);
 
     if (mouseButtons & Qt::LeftButton)      // LB rotates along x-axis
     {
-        temp[0] = (*v)[0] + delta;
+        temp[0] = delta;
     }
     if (mouseButtons & Qt::MiddleButton)    // MB rotates along y-axis
     {
-        temp[1] = (*v)[1] + delta;
+        temp[1] = delta;
     }
     if (mouseButtons & Qt::RightButton)     // RB rotates along z-axis
     {
-        temp[2] = (*v)[2] + delta;
+        temp[2] = delta;
     }
 
-    *v = Vector3D(temp);
+    Matrix4x4 modelTrans;
+    Matrix4x4 gnomonTrans;
 
     switch(editMode)
     {
     case VIEW_R:
+        m_view = rotation(temp[2], 'z')
+                * rotation(temp[1], 'y')
+                * rotation(temp[0], 'x') * m_view;
+        break;
     case VIEW_T:
+        m_view = translation(temp) * m_view;
+        break;
     case VIEW_P:
-        update_view();
+        m_view = *new Matrix4x4();
         break;
     case MODEL_R:
+        gnomonTrans = modelTrans = rotation(temp[2], 'z') * rotation(temp[1], 'y') * rotation(temp[0], 'x');
+        break;
     case MODEL_S:
+        modelTrans = scaling(Vector3D(1,1,1) + temp);
+        break;
     case MODEL_T:
-        m_cube.resetTransform();
-        m_cube.appendTransform(translation(t_model));
-        m_cube.appendTransform(rotation(r_model[2], 'z'));
-        m_cube.appendTransform(rotation(r_model[1], 'y'));
-        m_cube.appendTransform(rotation(r_model[0], 'x'));
-        m_cube.appendTransform(scaling(s_model));
+        gnomonTrans = modelTrans = translation(temp);
         break;
     case VIEWPORT:
         break;
     }
+    m_cube.appendTransform(modelTrans);
+    m_cubeGnomon = gnomonTrans * m_cubeGnomon;
 
     invalidate();
 }

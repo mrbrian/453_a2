@@ -86,6 +86,7 @@ private:
 	// *** Fill me in ***
     // You will want to declare some more matrices here
     Cube m_cube;
+    Matrix4x4 m_cubeGnomon;
     Point3D * g_world;
 
     EditMode editMode;
@@ -97,12 +98,6 @@ private:
 
     int p_mouseX;
 
-    Vector3D r_model;
-    Vector3D s_model;
-    Vector3D t_model;
-
-    Vector3D r_view;
-    Vector3D t_view;
     Vector3D p_view;
 
     Matrix4x4 m_world;
