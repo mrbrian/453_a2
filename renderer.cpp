@@ -308,10 +308,3 @@ void Renderer::setMode(EditMode mode)
     editMode = mode;
 }
 
-void Renderer::move(int x)
-{
-    float delta = (float)x / 100;
-    t_view = Vector3D(t_view[0] + delta, t_view[1], t_view[2]);
-    update_view();
-    invalidate();
-}
