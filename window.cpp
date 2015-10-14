@@ -164,18 +164,11 @@ Window::Window(QWidget * parent) :
     mModelMenu = mModeMenu->addMenu(tr("&Model"));
     mViewMenu->addAction(mVRotateAction);
     mViewMenu->addAction(mVTransAction);
-    mViewMenu->addAction(mPerspAction);
+    mViewMenu->addAction(mVPerspAction);
 
     mModelMenu->addAction(mMRotateAction);
     mModelMenu->addAction(mMTransAction);
-    mModelMenu->addAction(mScaleAction);
-
-/*
-    QWidget * mainWidget = new QWidget();
-    mainWidget->setLayout(layout);
-
-    modeLabel = new QLabel(this);
-    layout->addWidget(modeLabel);*/
+    mModelMenu->addAction(mMScaleAction);
 }
 
 // destructor
@@ -197,10 +190,10 @@ void Window::createActions()
     mResetAction = new QAction(tr("&Reset"), this);
     mResetAction->setShortcut(QKeySequence(Qt::Key_A));
     mResetAction->setStatusTip(tr("Resets the view"));
-    connect(mResetAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    connect(mResetAction, SIGNAL(triggered()), renderer, SLOT(reset_view()));
 
     mModeGroup = new QActionGroup(this);
-    //connect(mModeGroup, SIGNAL(triggered(QAction *)), this, SLOT(setMode(QAction *)));
+    connect(mModeGroup, SIGNAL(triggered(QAction *)), this, SLOT(setMode(QAction *)));
     mModeGroup->setExclusive(true);
 
     mVRotateAction = new QAction(tr("&Rotate"), this);
@@ -213,10 +206,10 @@ void Window::createActions()
     mVTransAction->setStatusTip(tr("Translates the view"));
     mModeGroup->addAction(mVTransAction);
 
-    mPerspAction = new QAction(tr("&Perspective"), this);
-    mPerspAction->setShortcut(QKeySequence(Qt::Key_P));
-    mPerspAction->setStatusTip(tr("Adjust the perspective"));
-    mModeGroup->addAction(mPerspAction);
+    mVPerspAction = new QAction(tr("&Perspective"), this);
+    mVPerspAction->setShortcut(QKeySequence(Qt::Key_P));
+    mVPerspAction->setStatusTip(tr("Adjust the perspective"));
+    mModeGroup->addAction(mVPerspAction);
 
     mMRotateAction = new QAction(tr("&Rotate"), this);
     mMRotateAction->setShortcut(QKeySequence(Qt::Key_R));
@@ -228,18 +221,18 @@ void Window::createActions()
     mMTransAction->setStatusTip(tr("Translates the model"));
     mModeGroup->addAction(mMTransAction);
 
-    mScaleAction = new QAction(tr("&Scale"), this);
-    mScaleAction->setShortcut(QKeySequence(Qt::Key_S));
-    mScaleAction->setStatusTip(tr("Scale the model "));
-    mModeGroup->addAction(mScaleAction);
+    mMScaleAction = new QAction(tr("&Scale"), this);
+    mMScaleAction->setShortcut(QKeySequence(Qt::Key_S));
+    mMScaleAction->setStatusTip(tr("Scale the model "));
+    mModeGroup->addAction(mMScaleAction);
 
     mVRotateAction->setCheckable(true);
     mVTransAction->setCheckable(true);
-    mPerspAction->setCheckable(true);
+    mVPerspAction->setCheckable(true);
 
     mMRotateAction->setCheckable(true);
     mMTransAction->setCheckable(true);
-    mScaleAction->setCheckable(true);
+    mMScaleAction->setCheckable(true);
 
     mViewportAction = new QAction(tr("&Viewport"), this);
     mViewportAction->setShortcut(QKeySequence(Qt::Key_S));
@@ -248,11 +241,19 @@ void Window::createActions()
 }
 
 void Window::setMode(QAction * action)
-{/*
-    if (action == mRotateAction)
-        renderer->setDrawMode(Renderer::WIRE);
-    else if (action == mTransAction)
-        renderer->setDrawMode(Renderer::FACES);
+{
+    if (action == mVRotateAction)
+        renderer->setMode(Renderer::VIEW_R);
+    else if (action == mVTransAction)
+        renderer->setMode(Renderer::VIEW_T);
+    else if (action == mVPerspAction)
+        renderer->setMode(Renderer::VIEW_P);
+    else if (action == mMRotateAction)
+        renderer->setMode(Renderer::MODEL_R);
+    else if (action == mMTransAction)
+        renderer->setMode(Renderer::MODEL_T);
+    else if (action == mMScaleAction)
+        renderer->setMode(Renderer::MODEL_S);
     else
-        renderer->setDrawMode(Renderer::MULTI);*/
+        renderer->setMode(Renderer::VIEWPORT);
 }

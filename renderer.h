@@ -15,7 +15,11 @@ class Renderer : public QOpenGLWidget, protected QOpenGLFunctions {
 
 public:    
     // draw mode types
+<<<<<<< HEAD
     enum EditMode {VIEW, MODEL, PERSP};
+=======
+    enum EditMode {VIEW_R, VIEW_T, VIEW_P, MODEL_R, MODEL_S, MODEL_T, VIEWPORT};
+>>>>>>> b6de2eda9fe438afcad8844cf4f52f9afb65194e
 
     // constructor
     Renderer(QWidget *parent = 0);
@@ -36,10 +40,12 @@ public:
 	void set_perspective(double fov, double aspect,
                double near, double far);
 
-	// Restore all the transforms and perspective parameters to their
-	// original state. Set the viewport to its initial size.
-	void reset_view();
+    void setMode(EditMode mode);
 
+public slots:
+    // Restore all the transforms and perspective parameters to their
+    // original state. Set the viewport to its initial size.
+    void reset_view();
 
 protected:
 
@@ -73,9 +79,9 @@ protected:
 
 
 private:
-
+    void update_projection();
     void drawBox();
-    void drawGnomon();
+    void drawGnomon(Matrix4x4 *model_matrix);
     void setupViewport();
     void drawViewport();
     void move(int x);
@@ -83,8 +89,7 @@ private:
 
 	// *** Fill me in ***
     // You will want to declare some more matrices here
-    Point3D * g_box_verts;
-    int     * g_box_edges;
+    Cube m_cube;
     Point3D * g_world;
 
     EditMode editMode;
@@ -95,19 +100,20 @@ private:
     int viewport_bottom;
 
     int p_mouseX;
-    int p_mouseY;
 
     Vector3D r_model;
     Vector3D s_model;
     Vector3D t_model;
 
     Vector3D r_view;
-    Vector3D s_view;
     Vector3D t_view;
+    Vector3D p_view;
 
-    Matrix4x4 m_model;
     Matrix4x4 m_view;
     Matrix4x4 m_projection;
+
+    // mouse buttons that are currently pressed
+    int mouseButtons;
 };
 
 #endif

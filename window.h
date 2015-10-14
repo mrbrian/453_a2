@@ -38,11 +38,11 @@ private:
     QMenu * mViewMenu;
     QAction * mVRotateAction;
     QAction * mVTransAction;
-    QAction * mPerspAction;
+    QAction * mVPerspAction;
 
     QAction * mMRotateAction;
     QAction * mMTransAction;
-    QAction * mScaleAction;
+    QAction * mMScaleAction;
 
     QAction * mViewportAction;
 
