@@ -78,6 +78,7 @@ private:
 
 	// *** Fill me in ***
     // You will want to declare some more matrices here
+    Cube m_cube;
     Point3D * g_box;
     Point3D * g_world;
 

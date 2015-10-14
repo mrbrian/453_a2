@@ -103,9 +103,40 @@ void Renderer::paintGL()
 	draw_line(Point2D(0.1*width(), 0.1*height()), 
         Point2D(0.1*width(), 0.2*height()));*/
 
+    std::vector<Line3D> demoLines = m_cube.getLines();
+    Matrix4x4 model_matrix = m_cube.getTransform();
+
+    for(std::vector<Line3D>::iterator it = demoLines.begin(); it != demoLines.end(); ++it)
+    {
+        Line3D line = *it;
+        // Get the points and apply the model matrix
+        Point3D p1 = model_matrix * line.getP1(), p2 = model_matrix * line.getP2();
+
+        // Fill this in: Apply the view matrix
+        p1 = m_view * p1;
+        p2 = m_view * p2;
+        float dist1 = p1[2];
+        float dist2 = p2[2];
+
+        // Fill this in: Do clipping here...
+
+        // Apply the projection matrix
+        p1 = m_projection * p1;
+        p2 = m_projection * p2;
+
+        p1[0] =  p1[0] * width() / dist1 + width() / 2;
+        p1[1] = -p1[1] * height() / dist1 + height() / 2;
+
+        p2[0] =  p2[0] * width() / dist2 + width() / 2;
+        p2[1] = -p2[1] * height() / dist2 + height() / 2;
+       // Fill this in: Do clipping here (maybe)
+
+       draw_line(Point2D(p1[0], p1[1]), Point2D(p2[0], p2[1]));
+    }
+
     drawViewport();
     drawGnomon();
-    drawBox();
+    //drawBox();
 	draw_complete();
 	    
 }

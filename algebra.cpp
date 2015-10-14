@@ -140,3 +140,79 @@ Matrix4x4 Matrix4x4::invert() const
 
   return ret;
 }
+
+Line3D::Line3D() { }
+
+Line3D::Line3D(const Point3D &p1, Point3D &p2) : p1_(p1), p2_(p2) { }
+
+Line3D::Line3D(const Line3D &other) : p1_(other.p1_), p2_(other.p2_) { }
+
+Line3D::~Line3D() { }
+
+Point3D &Line3D::getP1()
+{
+    return p1_;
+}
+
+Point3D &Line3D::getP2()
+{
+    return p2_;
+}
+
+Cube::Cube()
+{
+    verts_.push_back(Point3D(-1,1,-1));
+    verts_.push_back(Point3D(-1,1,1));
+    verts_.push_back(Point3D(-1,1,1));
+    verts_.push_back(Point3D(1,1,1));
+    verts_.push_back(Point3D(1,1,1));
+    verts_.push_back(Point3D(1,1,-1));
+    verts_.push_back(Point3D(1,1,-1));
+    verts_.push_back(Point3D(-1,1,-1));
+
+    verts_.push_back(Point3D(-1,-1,-1));
+    verts_.push_back(Point3D(-1,-1,1));
+    verts_.push_back(Point3D(-1,-1,1));
+    verts_.push_back(Point3D(1,-1,1));
+    verts_.push_back(Point3D(1,-1,1));
+    verts_.push_back(Point3D(1,-1,-1));
+    verts_.push_back(Point3D(1,-1,-1));
+    verts_.push_back(Point3D(-1,-1,-1));
+
+    verts_.push_back(Point3D(-1,1,-1));
+    verts_.push_back(Point3D(-1,-1,-1));
+    verts_.push_back(Point3D(-1,1,1));
+    verts_.push_back(Point3D(-1,-1,1));
+    verts_.push_back(Point3D(1,1,1));
+    verts_.push_back(Point3D(1,-1,1));
+    verts_.push_back(Point3D(1,1,-1));
+    verts_.push_back(Point3D(1,-1,-1));
+}
+
+Cube::~Cube() { }
+
+Matrix4x4 Cube::getTransform() const
+{
+    return this->transform_;
+}
+
+void Cube::resetTransform()
+{
+    this->transform_ = Matrix4x4();
+}
+void Cube::appendTransform(const Matrix4x4 &xform)
+{
+    this->transform_ = this->transform_ * xform;
+}
+
+std::vector<Line3D> Cube::getLines()
+{
+    std::vector<Line3D> lines;
+
+    for(std::vector<Point3D>::iterator it = verts_.begin(); it != verts_.end(); ++it)
+    {
+        Point3D p1 = *(it++), p2 = *it;
+        lines.push_back(Line3D(p1,p2));
+    }
+    return lines;
+}
