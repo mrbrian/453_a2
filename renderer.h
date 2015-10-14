@@ -36,11 +36,12 @@ public:
 	void set_perspective(double fov, double aspect,
                double near, double far);
 
-	// Restore all the transforms and perspective parameters to their
-	// original state. Set the viewport to its initial size.
-	void reset_view();
-
     void setMode(EditMode mode);
+
+public slots:
+    // Restore all the transforms and perspective parameters to their
+    // original state. Set the viewport to its initial size.
+    void reset_view();
 
 protected:
 
@@ -74,9 +75,9 @@ protected:
 
 
 private:
-
+    void update_projection();
     void drawBox();
-    void drawGnomon();
+    void drawGnomon(Matrix4x4 *model_matrix);
     void setupViewport();
     void drawViewport();
     void move(int x);

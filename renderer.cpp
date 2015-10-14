@@ -17,8 +17,7 @@ Renderer::Renderer(QWidget *parent)
         *new Point3D(0,0,0.5)
     };
 
-    float aspect = (float)width() / height();
-    set_perspective(30.0 / 180 * M_PI, aspect, 0.1, 100);
+    update_projection();
     reset_view();
     s_model = Vector3D(1,1,1);
 }
@@ -52,16 +51,22 @@ void Renderer::reset_view()
 {
     // Fill me in!
     t_view = Vector3D(0, 0, 10);
+    r_view = Vector3D(0,0,0);
+
     m_view = *new Matrix4x4();
     //m_view = rotation(45.0/180*M_PI, 'x') * rotation(M_PI_4, 'y');
     m_view = translation(t_view) * m_view;
+    invalidate();
 }
 
 void Renderer::update_view()
 {
     // Fill me in!
        m_view = *new Matrix4x4();
-       m_view = translation(t_view) * m_view;
+       m_view = rotation(r_view[2], 'z')
+               * rotation(r_view[1], 'y')
+               * rotation(r_view[0], 'x')
+               * translation(t_view) * m_view;
 }
 
 void Renderer::setupViewport()
@@ -72,13 +77,19 @@ void Renderer::setupViewport()
     viewport_right  = width() * 0.95;
 }
 
+void Renderer::update_projection()
+{
+    float aspect = (float)width() / height();
+    set_perspective(30.0 / 180 * M_PI, aspect, 0.1, 100);
+}
+
 // called once by Qt GUI system, to allow initialization for OpenGL requirements
 void Renderer::initializeGL()
 {
     // You might not have anything in here, might have viewport & matrix setup...
     setupViewport();
+    update_projection();
 }
-
 
 // called by the Qt GUI system, to allow OpenGL drawing commands
 void Renderer::paintGL()
@@ -92,8 +103,12 @@ void Renderer::paintGL()
     set_colour(Colour(0.1, 0.1, 0.1));
 
     drawViewport();
-    drawGnomon();
+
+    Matrix4x4 m;
+    drawGnomon(&m);
     drawBox();
+    m = m_cube.getTransform();
+    drawGnomon(&m);
 	draw_complete();
 	    
 }
@@ -106,6 +121,7 @@ void Renderer::resizeGL(int width, int height)
 
     // You might not have anything in here, might have viewport setup...
     setupViewport();
+    update_projection();
 }
 
 // override mouse press event
@@ -153,17 +169,17 @@ void Renderer::drawViewport()
     draw_line(topL, topR);
 }
 
-void Renderer::drawGnomon()
+void Renderer::drawGnomon(Matrix4x4 *model_matrix)
 {
-   /* Colour colours[] = {
+    Colour colours[] = {
         Colour(1,0,0),
         Colour(0,1,0),
         Colour(0,0,1)
     };
 
-    Point3D p = m_projection * m_view * m_model * g_world[0];
+    Point3D p = m_view * *model_matrix * g_world[0];
     double dist = p[2];
-    p = m_projection * m_view * m_model * g_world[0];
+    p = m_projection * p;
     Point2D a, b;
 
     a[0] = p[0] * width() / dist + width() / 2;
@@ -172,7 +188,7 @@ void Renderer::drawGnomon()
     for (int i = 1; i < 4; i++)
     {
         set_colour(colours[i - 1]);
-        p = m_view * m_model * g_world[i];
+        p = m_view * *model_matrix * g_world[i];
         dist = p[2];
         p = m_projection * p;
 
@@ -180,7 +196,7 @@ void Renderer::drawGnomon()
         b[1] = -p[1] * height() / dist + height() / 2;
 
         draw_line(a, b);
-    }*/
+    }
 }
 
 void Renderer::drawBox()
@@ -206,10 +222,10 @@ void Renderer::drawBox()
         p1 = m_projection * p1;
         p2 = m_projection * p2;
 
-        p1[0] =  p1[0] * width() / dist1 + width() / 2;
+        p1[0] =  p1[0] * width() / dist1 / ((float)width() / height()) + width() / 2;
         p1[1] = -p1[1] * height() / dist1 + height() / 2;
 
-        p2[0] =  p2[0] * width() / dist2 + width() / 2;
+        p2[0] =  p2[0] * width() / dist2 / ((float)width() / height()) + width() / 2;
         p2[1] = -p2[1] * height() / dist2 + height() / 2;
        // Fill this in: Do clipping here (maybe)
 
@@ -219,8 +235,7 @@ void Renderer::drawBox()
 
 void Renderer::move(int x)
 {
-    Vector3D *v;
-    Vector3D temp;
+    Vector3D *v, temp;
     float delta = (float)x / 100;
 
     switch(editMode)

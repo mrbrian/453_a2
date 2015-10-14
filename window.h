@@ -37,11 +37,11 @@ private:
     QMenu * mViewMenu;
     QAction * mVRotateAction;
     QAction * mVTransAction;
-    QAction * mPerspAction;
+    QAction * mVPerspAction;
 
     QAction * mMRotateAction;
     QAction * mMTransAction;
-    QAction * mScaleAction;
+    QAction * mMScaleAction;
 
     QAction * mViewportAction;
 	// helper function for creating actions
