@@ -53,6 +53,11 @@ void Renderer::reset_view()
     t_view = Vector3D(0, 0, 10);
     r_view = Vector3D(0,0,0);
 
+    r_model = Vector3D(0,0,0);
+    t_model = Vector3D(0,0,0);
+    s_model = Vector3D(1,1,1);
+    m_cube.resetTransform();
+
     m_view = *new Matrix4x4();
     //m_view = rotation(45.0/180*M_PI, 'x') * rotation(M_PI_4, 'y');
     m_view = translation(t_view) * m_view;
@@ -217,6 +222,11 @@ void Renderer::drawBox()
         float dist2 = p2[2];
 
         // Fill this in: Do clipping here...
+
+	// so..  do clipping for each side.
+	// check since NDC?
+	
+	// then .. 
 
         // Apply the projection matrix
         p1 = m_projection * p1;
