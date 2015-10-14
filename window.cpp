@@ -110,7 +110,6 @@ int perspMatrix()
         result[1] / d,
         result[2] / d
     );
-
     return 0;
 }
 
@@ -143,11 +142,19 @@ Window::Window(QWidget * parent) :
 
     setWindowTitle("CPSC453: Boxes vs the World!");
 
-	// Create the main drawing object
-	renderer = new Renderer();
-	renderer->setMinimumSize(300, 300);
+    // Create the main drawing object
+    renderer = new Renderer();
+    renderer->setMinimumSize(300, 300);
 
-	setCentralWidget(renderer);
+    // Setup the application's widget collection
+    QVBoxLayout * layout = new QVBoxLayout();
+
+    // Add renderer
+    layout->addWidget(renderer);
+
+    QWidget * mainWidget = new QWidget();
+    mainWidget->setLayout(layout);
+    setCentralWidget(mainWidget);
 
 	// Create the actions to be used by the menus
 	createActions();
@@ -169,6 +176,14 @@ Window::Window(QWidget * parent) :
     mModelMenu->addAction(mMRotateAction);
     mModelMenu->addAction(mMTransAction);
     mModelMenu->addAction(mMScaleAction);
+
+    // Setup the quit button
+    modeLabel = new QLabel(this);
+    layout->addWidget(modeLabel);
+    layout->setAlignment(modeLabel, Qt::AlignBottom);
+    modeLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    modeLabel->setText("Mode: Sdf");
+    modeLabel->setAlignment(Qt::AlignBottom | Qt::AlignLeft);
 }
 
 // destructor
@@ -233,6 +248,8 @@ void Window::createActions()
     mMRotateAction->setCheckable(true);
     mMTransAction->setCheckable(true);
     mMScaleAction->setCheckable(true);
+
+    mMRotateAction->setChecked(true);
 
     mViewportAction = new QAction(tr("&Viewport"), this);
     mViewportAction->setShortcut(QKeySequence(Qt::Key_S));
