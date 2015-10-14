@@ -105,6 +105,7 @@ private:
     Vector3D t_view;
     Vector3D p_view;
 
+    Matrix4x4 m_world;
     Matrix4x4 m_view;
     Matrix4x4 m_projection;
 

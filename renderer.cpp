@@ -224,19 +224,25 @@ void Renderer::drawBox()
         // Fill this in: Do clipping here...
 
 	// so..  do clipping for each side.
-	// check since NDC?
-	
+
+	// check since NDC?	
 	// then .. 
 
         // Apply the projection matrix
         p1 = m_projection * p1;
         p2 = m_projection * p2;
 
-        p1[0] =  p1[0] * width() / dist1 / ((float)width() / height()) + width() / 2;
-        p1[1] = -p1[1] * height() / dist1 + height() / 2;
+        // homogenization
+        p1 =  Point3D(p1[0] / dist1, -p1[1] / dist1, 1);
+        p2 =  Point3D(p2[0] / dist2, -p2[1] / dist2, 1);
 
-        p2[0] =  p2[0] * width() / dist2 / ((float)width() / height()) + width() / 2;
-        p2[1] = -p2[1] * height() / dist2 + height() / 2;
+        // map to viewport
+        p1[0] =  p1[0] * width() + width() / 2;
+        p1[1] = -p1[1] * height() + height() / 2;
+
+        p2[0] =  p2[0] * width() + width() / 2;
+        p2[1] = -p2[1] * height() + height() / 2;
+
        // Fill this in: Do clipping here (maybe)
 
        draw_line(Point2D(p1[0], p1[1]), Point2D(p2[0], p2[1]));
