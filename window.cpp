@@ -192,7 +192,7 @@ void Window::createActions()
     connect(mResetAction, SIGNAL(triggered()), qApp, SLOT(quit()));
 
     mModeGroup = new QActionGroup(this);
-    //connect(mModeGroup, SIGNAL(triggered(QAction *)), this, SLOT(setMode(QAction *)));
+    connect(mModeGroup, SIGNAL(triggered(QAction *)), this, SLOT(setMode(QAction *)));
     mModeGroup->setExclusive(true);
 
     mVRotateAction = new QAction(tr("&Rotate"), this);
@@ -240,11 +240,19 @@ void Window::createActions()
 }
 
 void Window::setMode(QAction * action)
-{/*
-    if (action == mRotateAction)
-        renderer->setDrawMode(Renderer::WIRE);
-    else if (action == mTransAction)
-        renderer->setDrawMode(Renderer::FACES);
+{
+    if (action == mVRotateAction)
+        renderer->setMode(Renderer::VIEW_R);
+    else if (action == mVTransAction)
+        renderer->setMode(Renderer::VIEW_T);
+    else if (action == mPerspAction)
+        renderer->setMode(Renderer::VIEW_P);
+    if (action == mMRotateAction)
+        renderer->setMode(Renderer::MODEL_R);
+    else if (action == mMTransAction)
+        renderer->setMode(Renderer::MODEL_T);
+    else if (action == mScaleAction)
+        renderer->setMode(Renderer::MODEL_S);
     else
-        renderer->setDrawMode(Renderer::MULTI);*/
+        renderer->setMode(Renderer::VIEWPORT);
 }

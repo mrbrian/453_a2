@@ -200,6 +200,7 @@ void Cube::resetTransform()
 {
     this->transform_ = Matrix4x4();
 }
+
 void Cube::appendTransform(const Matrix4x4 &xform)
 {
     this->transform_ = this->transform_ * xform;

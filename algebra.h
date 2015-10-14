@@ -500,7 +500,6 @@ private:
     Point3D p1_, p2_;
 };
 
-// And add
 class Cube
 {
 public:
@@ -516,6 +515,13 @@ public:
 private:
     std::vector<Point3D> verts_;
     Matrix4x4 transform_;
+};
+
+class Gnomon
+{
+public:
+    Gnomon();
+    ~Gnomon();
 };
 
 #endif // ALGEBRA_H
