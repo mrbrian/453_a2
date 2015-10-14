@@ -15,11 +15,7 @@ class Renderer : public QOpenGLWidget, protected QOpenGLFunctions {
 
 public:    
     // draw mode types
-<<<<<<< HEAD
-    enum EditMode {VIEW, MODEL, PERSP};
-=======
     enum EditMode {VIEW_R, VIEW_T, VIEW_P, MODEL_R, MODEL_S, MODEL_T, VIEWPORT};
->>>>>>> b6de2eda9fe438afcad8844cf4f52f9afb65194e
 
     // constructor
     Renderer(QWidget *parent = 0);
