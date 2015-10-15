@@ -4,6 +4,10 @@
 #include "draw.h"
 #include "a2.h"
 
+#define DEF_VIEW_NEAR       5
+#define DEF_VIEW_FAR        40
+#define DEF_VIEW_FOV        30
+
 // constructor
 Renderer::Renderer(QWidget *parent)
 	: QOpenGLWidget(parent)
@@ -50,14 +54,16 @@ void Renderer::reset_view()
 {
     // Fill me in!
     Vector3D t_view = Vector3D(0, 0, 20);
-    p_view = Vector3D(5, 40, 30);
+    p_view = Vector3D(DEF_VIEW_NEAR, DEF_VIEW_FAR, DEF_VIEW_FOV);
+    update_projection();
 
     m_cube.resetTransform();
     m_cubeGnomon = Matrix4x4();
 
     m_view = *new Matrix4x4();
     m_view = translation(t_view) * m_view;
-    invalidate();
+    setupViewport();
+    invalidate();    
 }
 
 void Renderer::update_view()
@@ -184,10 +190,11 @@ void Renderer::drawGnomon(Matrix4x4 *model_matrix)
     Point3D a, b;
     Point3D p1 = (*model_matrix) * g_world[0];
     p1 = m_view * p1;
+    double dist1 = p1[2];
     p1 = m_projection * p1;
 
     // homogenize
-    a = scaling(Vector3D(1.0 / p1[2], 1.0 / p1[2], 1.0 / p1[2])) * Point3D(p1[0], p1[1], 1);
+    a = scaling(Vector3D(1.0 / dist1, 1.0 / dist1, 1.0 / dist1)) * Point3D(p1[0], p1[1], 1);
     // transform to viewport
     a = m_mapViewport * a;
 
@@ -197,10 +204,10 @@ void Renderer::drawGnomon(Matrix4x4 *model_matrix)
 
         Point3D p2 = (*model_matrix) * g_world[i];
         p2 = m_view * p2;
+        double dist2 = p2[2];
         p2 = m_projection * p2;
-
         // homogenize
-        Matrix4x4 m_scale = scaling(Vector3D(1.0 / p2[2], 1.0 / p2[2], 1.0 / p2[2]));
+        Matrix4x4 m_scale = scaling(Vector3D(1.0 / dist2, 1.0 / dist2, 1.0 / dist2));
         b = m_scale * Point3D(p2[0], p2[1], 1);
         // transform to viewport
         b = m_mapViewport * b;
@@ -268,13 +275,14 @@ void Renderer::drawBox()
             p2 = q;
         }
 
+        double dist1 = p1[2], dist2 = p2[2];
         // Apply the projection matrix
         p1 = m_projection * p1;
         p2 = m_projection * p2;
 
         // homogenization
-        Matrix4x4 m_scale1 = scaling(Vector3D(1.0 / p1[2], 1.0 / p1[2], 1.0 / p1[2]));
-        Matrix4x4 m_scale2 = scaling(Vector3D(1.0 / p2[2], 1.0 / p2[2], 1.0 / p2[2]));
+        Matrix4x4 m_scale1 = scaling(Vector3D(1.0 / dist1, 1.0 / dist1, 1.0 / dist1));
+        Matrix4x4 m_scale2 = scaling(Vector3D(1.0 / dist2, 1.0 / dist2, 1.0 / dist2));
 
         p1 = m_scale1 * Point3D(p1[0], p1[1], 1);
         p2 = m_scale2 * Point3D(p2[0], p2[1], 1);
@@ -322,7 +330,7 @@ void Renderer::editValue(int value)
         break;
     case VIEW_P:
         p_view = p_view + temp;
-        //update_projection();
+        update_projection();
         break;
     case MODEL_R:
         gnomonTrans = modelTrans = rotation(temp[2], 'z') * rotation(temp[1], 'y') * rotation(temp[0], 'x');

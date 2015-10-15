@@ -189,7 +189,7 @@ Window::Window(QWidget * parent) :
     layout->addWidget(modeLabel);
     layout->setAlignment(modeLabel, Qt::AlignBottom);
     modeLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-    modeLabel->setText("Mode: Sdf");
+    modeLabel->setText("Model: Rotate");
     modeLabel->setAlignment(Qt::AlignBottom | Qt::AlignLeft);
 }
 
