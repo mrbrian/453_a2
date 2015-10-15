@@ -49,13 +49,12 @@ void Renderer::set_perspective(double fov, double aspect,
 void Renderer::reset_view()
 {
     // Fill me in!
-    Vector3D t_view = Vector3D(0, 0, 10);
+    Vector3D t_view = Vector3D(0, 0, 20);
 
     m_cube.resetTransform();
     m_cubeGnomon = Matrix4x4();
 
     m_view = *new Matrix4x4();
-    //m_view = rotation(45.0/180*M_PI, 'x') * rotation(M_PI_4, 'y');
     m_view = translation(t_view) * m_view;
     invalidate();
 }
@@ -63,11 +62,6 @@ void Renderer::reset_view()
 void Renderer::update_view()
 {
     // Fill me in!
-/*       m_view = *new Matrix4x4();
-       m_view = rotation(r_view[2], 'z')
-               * rotation(r_view[1], 'y')
-               * rotation(r_view[0], 'x')
-               * translation(t_view) * m_view;*/
 }
 
 void Renderer::setupViewport()
@@ -176,28 +170,32 @@ void Renderer::drawGnomon(Matrix4x4 *model_matrix)
         Colour(0,0,1)
     };
 
-    Point3D p = m_view * (*model_matrix) * g_world[0];
-    double dist = p[2];
-    p = m_projection * p;
-    Point2D a, b;
+    Point3D p1 = (*model_matrix) * g_world[0];
+    p1 = m_view * p1;
+    p1 = m_projection * p1;
+    double dist1 = p1[2];
+    Point3D a, b;
 
-    a[0] = p[0] * width() / dist + width() / 2;
-    a[1] = -p[1] * height() / dist + height() / 2;
+    a = Point3D(p1[0] / dist1, p1[1] / dist1, 1);
+
+    a[0] = a[0] * width() + width() / 2;
+    a[1] = a[1] * height() + height() / 2;
 
     for (int i = 1; i < 4; i++)
     {
+
         set_colour(colours[i - 1]);
-        p = m_view * *model_matrix * g_world[i];
-        dist = p[2];
-        p = m_projection * p;
+        Point3D p2 = (*model_matrix) * g_world[i];
+        p2 = m_view * p2;
+        p2 = m_projection * p2;
+        double dist2 = p2[2];
 
-        b[0] = p[0] * width() / dist + width() / 2;
-        b[1] = -p[1] * height() / dist + height() / 2;
+        b = Point3D(p2[0] / dist2, p2[1] / dist2, 1);
 
-        b[0] = p[0] * width() / dist + width() / 2;
-        b[1] = -p[1] * height() / dist + height() / 2;
+        b[0] = b[0] * width() + width() / 2;
+        b[1] = b[1] * height() + height() / 2;
 
-        draw_line(a, b);
+        draw_line(Point2D(a[0], a[1]), Point2D(b[0], b[1]));
     }
 }
 
@@ -230,15 +228,15 @@ void Renderer::drawBox()
         p2 = m_projection * p2;
 
         // homogenization
-        p1 =  Point3D(p1[0] / dist1, -p1[1] / dist1, 1);
-        p2 =  Point3D(p2[0] / dist2, -p2[1] / dist2, 1);
+        p1 =  Point3D(p1[0] / dist1, p1[1] / dist1, 1);
+        p2 =  Point3D(p2[0] / dist2, p2[1] / dist2, 1);
 
         // map to viewport
-        p1[0] =  p1[0] * width() + width() / 2;
-        p1[1] = -p1[1] * height() + height() / 2;
+        p1[0] = p1[0] * width() + width() / 2;
+        p1[1] = p1[1] * height() + height() / 2;
 
-        p2[0] =  p2[0] * width() + width() / 2;
-        p2[1] = -p2[1] * height() + height() / 2;
+        p2[0] = p2[0] * width() + width() / 2;
+        p2[1] = p2[1] * height() + height() / 2;
 
        // Fill this in: Do clipping here (maybe)
 
@@ -293,7 +291,7 @@ void Renderer::move(int x)
         break;
     }
     m_cube.appendTransform(modelTrans);
-    m_cubeGnomon = gnomonTrans * m_cubeGnomon;
+    m_cubeGnomon = m_cubeGnomon * gnomonTrans;
 
     invalidate();
 }
