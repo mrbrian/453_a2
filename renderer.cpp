@@ -17,8 +17,8 @@ Renderer::Renderer(QWidget *parent)
         *new Point3D(0,0,0.5)
     };
 
-    update_projection();
     reset_view();
+    update_projection();
 }
 
 // destructor
@@ -50,6 +50,7 @@ void Renderer::reset_view()
 {
     // Fill me in!
     Vector3D t_view = Vector3D(0, 0, 20);
+    p_view = Vector3D(5, 40, 30);
 
     m_cube.resetTransform();
     m_cubeGnomon = Matrix4x4();
@@ -66,16 +67,21 @@ void Renderer::update_view()
 
 void Renderer::setupViewport()
 {
-    viewport_top    = height() * 0.05;
-    viewport_left   = width() * 0.05;
-    viewport_bottom = height() * 0.95;
-    viewport_right  = width() * 0.95;
+    m_viewport[0][0] = width() * 0.05;
+    m_viewport[0][1] = height() * 0.05;
+    m_viewport[1][0] = width() * 0.95;
+    m_viewport[1][1] = height() * 0.95;
+
+    m_mapViewport = Matrix4x4();
+    m_mapViewport[0][0] = width();
+    m_mapViewport[1][1] = height();
+    m_mapViewport = translation(Vector3D(width() / 2, height() / 2, 0)) * m_mapViewport;
 }
 
 void Renderer::update_projection()
 {
     float aspect = (float)width() / height();
-    set_perspective(30.0 / 180 * M_PI, aspect, 0.1, 100);
+    set_perspective(p_view[2] / 180 * M_PI, aspect, p_view[0], p_view[1]);
 }
 
 // called once by Qt GUI system, to allow initialization for OpenGL requirements
@@ -101,6 +107,7 @@ void Renderer::paintGL()
 
     Matrix4x4 m;
     drawGnomon(&m);
+    set_colour(Colour(0.1, 0.1, 0.1));
     drawBox();
     drawGnomon(&m_cubeGnomon);
 	draw_complete();
@@ -127,8 +134,11 @@ void Renderer::mousePressEvent(QMouseEvent * event)
 
     // save buttons
     mouseButtons = event->buttons();
+    if (editMode == VIEWPORT)
+    {
+        m_viewport[0] = Point2D(event->x(), event->y());
+    }
 }
-
 
 // override mouse release event
 void Renderer::mouseReleaseEvent(QMouseEvent * event)
@@ -147,19 +157,20 @@ void Renderer::mouseMoveEvent(QMouseEvent * event)
     cout << "Stub: Motion at " << event->x() << ", " << event->y() << ".\n";    
     move(event->x() - p_mouseX);
     p_mouseX = event->x();
+
+    if (editMode == VIEWPORT)
+    {
+        m_viewport[1] = Point2D(event->x(), event->y());
+    }
 }
 
 void Renderer::drawViewport()
 {
-    Point2D topL = Point2D(viewport_left, viewport_top);
-    Point2D botL = Point2D(viewport_left, viewport_bottom);
-    Point2D topR = Point2D(viewport_right, viewport_top);
-    Point2D botR = Point2D(viewport_right, viewport_bottom);
-
-    draw_line(topL, botL);
-    draw_line(botL, botR);
-    draw_line(botR, topR);
-    draw_line(topL, topR);
+    // Draw viewport
+    draw_line(m_viewport[0], Point2D(m_viewport[0][0], m_viewport[1][1]));
+    draw_line(m_viewport[0], Point2D(m_viewport[1][0], m_viewport[0][1]));
+    draw_line(m_viewport[1], Point2D(m_viewport[1][0], m_viewport[0][1]));
+    draw_line(m_viewport[1], Point2D(m_viewport[0][0], m_viewport[1][1]));
 }
 
 void Renderer::drawGnomon(Matrix4x4 *model_matrix)
@@ -170,11 +181,6 @@ void Renderer::drawGnomon(Matrix4x4 *model_matrix)
         Colour(0,0,1)
     };
 
-    Matrix4x4 m_viewport;
-    m_viewport[0][0] = width();
-    m_viewport[1][1] = height();
-    m_viewport = translation(Vector3D(width() / 2, height() / 2, 0)) * m_viewport;
-
     Point3D a, b;
     Point3D p1 = (*model_matrix) * g_world[0];
     p1 = m_view * p1;
@@ -183,7 +189,7 @@ void Renderer::drawGnomon(Matrix4x4 *model_matrix)
     // homogenize
     a = scaling(Vector3D(1.0 / p1[2], 1.0 / p1[2], 1.0 / p1[2])) * Point3D(p1[0], p1[1], 1);
     // transform to viewport
-    a = m_viewport * a;
+    a = m_mapViewport * a;
 
     for (int i = 1; i < 4; i++)
     {
@@ -197,7 +203,7 @@ void Renderer::drawGnomon(Matrix4x4 *model_matrix)
         Matrix4x4 m_scale = scaling(Vector3D(1.0 / p2[2], 1.0 / p2[2], 1.0 / p2[2]));
         b = m_scale * Point3D(p2[0], p2[1], 1);
         // transform to viewport
-        b = m_viewport * b;
+        b = m_mapViewport * b;
 
         draw_line(Point2D(a[0], a[1]), Point2D(b[0], b[1]));
     }
@@ -207,11 +213,6 @@ void Renderer::drawBox()
 {
     std::vector<Line3D> demoLines = m_cube.getLines();
     Matrix4x4 model_matrix = m_cube.getTransform();
-
-    Matrix4x4 m_viewport;
-    m_viewport[0][0] = width();
-    m_viewport[1][1] = height();
-    m_viewport = translation(Vector3D(width() / 2, height() / 2, 0)) * m_viewport;
 
     for(std::vector<Line3D>::iterator it = demoLines.begin(); it != demoLines.end(); ++it)
     {
@@ -225,10 +226,63 @@ void Renderer::drawBox()
 
         // Fill this in: Do clipping here...
 
-	// so..  do clipping for each side.
+        double near_ = p_view[0];
+        double far_  = p_view[1];
 
-	// check since NDC?	
-	// then .. 
+        // can check the near and far planes!
+        if (p1[2] > far_ && p2[2] > far_)
+            continue;
+        if (p1[2] < near_ && p2[2] < near_)
+            continue;
+
+        // if one too far
+        if (p1[2] > far_)
+        {
+            Vector3D n = Vector3D(0,0,-1);
+            Point3D a = p2;
+            Point3D b = p1;
+            Point3D p = Point3D(0, 0, far_);
+            double t = (a - p).dot(n) / (a - b).dot(n);
+
+            Point3D q = a + t * (b - a);
+            p1 = q;
+        }
+
+        if (p2[2] > far_)
+        {
+            Vector3D n = Vector3D(0,0,-1);
+            Point3D a = p1;
+            Point3D b = p2;
+            Point3D p = Point3D(0, 0, far_);
+            double t = (a - p).dot(n) / (a - b).dot(n);
+
+            Point3D q = a + t * (b - a);
+            p2 = q;
+        }
+
+        if (p1[2] < near_)
+        {
+            Vector3D n = Vector3D(0,0,1);
+            Point3D a = p2;
+            Point3D b = p1;
+            Point3D p = Point3D(0, 0, near_);
+            double t = (a - p).dot(n) / (a - b).dot(n);
+
+            Point3D q = a + t * (b - a);
+            p1 = q;
+        }
+
+        if (p2[2] < near_)
+        {
+            Vector3D n = Vector3D(0,0,1);
+            Point3D a = p1;
+            Point3D b = p2;
+            Point3D p = Point3D(0, 0, near_);
+            double t = (a - p).dot(n) / (a - b).dot(n);
+
+            Point3D q = a + t * (b - a);
+            p2 = q;
+        }
 
         // Apply the projection matrix
         p1 = m_projection * p1;
@@ -242,8 +296,8 @@ void Renderer::drawBox()
         p2 = m_scale2 * Point3D(p2[0], p2[1], 1);
 
         // map to viewport
-        p1 = m_viewport * p1;
-        p2 = m_viewport * p2;
+        p1 = m_mapViewport * p1;
+        p2 = m_mapViewport * p2;
 
        // Fill this in: Do clipping here (maybe)
 
@@ -283,7 +337,7 @@ void Renderer::move(int x)
         m_view = translation(temp) * m_view;
         break;
     case VIEW_P:
-        m_view = *new Matrix4x4();
+        p_view = p_view + temp;
         break;
     case MODEL_R:
         gnomonTrans = modelTrans = rotation(temp[2], 'z') * rotation(temp[1], 'y') * rotation(temp[0], 'x');

@@ -86,19 +86,17 @@ private:
 	// *** Fill me in ***
     // You will want to declare some more matrices here
     Cube m_cube;
-    Matrix4x4 m_cubeGnomon;
+    Matrix4x4 m_cubeGnomon;    
+    Matrix4x4 m_mapViewport;
     Point3D * g_world;
 
     EditMode editMode;
 
-    int viewport_left;
-    int viewport_right;
-    int viewport_top;
-    int viewport_bottom;
+    Point2D m_viewport[2];
 
     int p_mouseX;
 
-    Vector3D p_view;
+    Vector3D p_view;    // near, far, fov
 
     Matrix4x4 m_world;
     Matrix4x4 m_view;

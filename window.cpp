@@ -101,14 +101,19 @@ int perspMatrix()
 {
     Matrix4x4 p = perspective(90.0 / 180 * M_PI, 1, 1, 100);
     Point3D result = *new Point3D(10,0,100);
-    float d = 10;
-    Point3D expected = *new Point3D(0,0,0);
+    Point3D result2 = *new Point3D(100,0,100);
     result = p * result;
+    result2 = p * result2;
 
     result = *new Point3D(
-        result[0] / d,
-        result[1] / d,
-        result[2] / d
+        result[0] / result[2],
+        result[1] / result[2],
+        result[2] / result[2]
+    );
+    result2 = *new Point3D(
+        result2[0] / result2[2],
+        result2[1] / result2[2],
+        result2[2] / result2[2]
     );
     return 0;
 }
@@ -176,6 +181,8 @@ Window::Window(QWidget * parent) :
     mModelMenu->addAction(mMRotateAction);
     mModelMenu->addAction(mMTransAction);
     mModelMenu->addAction(mMScaleAction);
+
+    mModeMenu->addAction(mViewportAction);
 
     // Setup the quit button
     modeLabel = new QLabel(this);
@@ -252,7 +259,7 @@ void Window::createActions()
     mMRotateAction->setChecked(true);
 
     mViewportAction = new QAction(tr("&Viewport"), this);
-    mViewportAction->setShortcut(QKeySequence(Qt::Key_S));
+    mViewportAction->setShortcut(QKeySequence(Qt::Key_V));
     mViewportAction->setStatusTip(tr("Adjust the perspective"));
     mModeGroup->addAction(mViewportAction);
 }
@@ -260,17 +267,38 @@ void Window::createActions()
 void Window::setMode(QAction * action)
 {
     if (action == mVRotateAction)
+    {
         renderer->setMode(Renderer::VIEW_R);
+        modeLabel->setText("View: Rotate");
+    }
     else if (action == mVTransAction)
+    {
         renderer->setMode(Renderer::VIEW_T);
+        modeLabel->setText("View: Translate");
+    }
     else if (action == mVPerspAction)
+    {
         renderer->setMode(Renderer::VIEW_P);
+        modeLabel->setText("View: Perspective");
+    }
     else if (action == mMRotateAction)
+    {
         renderer->setMode(Renderer::MODEL_R);
+        modeLabel->setText("Model: Rotate");
+    }
     else if (action == mMTransAction)
+    {
         renderer->setMode(Renderer::MODEL_T);
+        modeLabel->setText("Model: Translate");
+    }
     else if (action == mMScaleAction)
+    {
         renderer->setMode(Renderer::MODEL_S);
+        modeLabel->setText("Model: Scale");
+    }
     else
+    {
         renderer->setMode(Renderer::VIEWPORT);
+        modeLabel->setText("Viewport");
+    }
 }
