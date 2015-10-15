@@ -260,7 +260,7 @@ void Window::createActions()
 
     mViewportAction = new QAction(tr("&Viewport"), this);
     mViewportAction->setShortcut(QKeySequence(Qt::Key_V));
-    mViewportAction->setStatusTip(tr("Adjust the perspective"));
+    mViewportAction->setStatusTip(tr("Adjust the viewport"));
     mModeGroup->addAction(mViewportAction);
 }
 

@@ -80,7 +80,7 @@ private:
     void drawGnomon(Matrix4x4 *model_matrix);
     void setupViewport();
     void drawViewport();
-    void move(int x);
+    void editValue(int x);
     void update_view();
 
 	// *** Fill me in ***

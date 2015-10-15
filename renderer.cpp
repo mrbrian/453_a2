@@ -155,7 +155,7 @@ void Renderer::mouseMoveEvent(QMouseEvent * event)
 {
     QTextStream cout(stdout);
     cout << "Stub: Motion at " << event->x() << ", " << event->y() << ".\n";    
-    move(event->x() - p_mouseX);
+    editValue(event->x() - p_mouseX);
     p_mouseX = event->x();
 
     if (editMode == VIEWPORT)
@@ -235,17 +235,13 @@ void Renderer::drawBox()
         if (p1[2] < near_ && p2[2] < near_)
             continue;
 
+        Point3D temp;
         // if one too far
-        if (p1[2] > far_)
+        if (p1[2] > far_ || p1[2] < near_)
         {
-            Vector3D n = Vector3D(0,0,-1);
-            Point3D a = p2;
-            Point3D b = p1;
-            Point3D p = Point3D(0, 0, far_);
-            double t = (a - p).dot(n) / (a - b).dot(n);
-
-            Point3D q = a + t * (b - a);
-            p1 = q;
+            temp = p1;
+            p1 = p2;
+            p2 = temp;
         }
 
         if (p2[2] > far_)
@@ -258,18 +254,6 @@ void Renderer::drawBox()
 
             Point3D q = a + t * (b - a);
             p2 = q;
-        }
-
-        if (p1[2] < near_)
-        {
-            Vector3D n = Vector3D(0,0,1);
-            Point3D a = p2;
-            Point3D b = p1;
-            Point3D p = Point3D(0, 0, near_);
-            double t = (a - p).dot(n) / (a - b).dot(n);
-
-            Point3D q = a + t * (b - a);
-            p1 = q;
         }
 
         if (p2[2] < near_)
@@ -305,10 +289,10 @@ void Renderer::drawBox()
     }
 }
 
-void Renderer::move(int x)
+void Renderer::editValue(int value)
 {
     Vector3D temp;
-    float delta = (float)x / 100;
+    float delta = (float)value / 100;
 
     if (mouseButtons & Qt::LeftButton)      // LB rotates along x-axis
     {
@@ -338,6 +322,7 @@ void Renderer::move(int x)
         break;
     case VIEW_P:
         p_view = p_view + temp;
+        //update_projection();
         break;
     case MODEL_R:
         gnomonTrans = modelTrans = rotation(temp[2], 'z') * rotation(temp[1], 'y') * rotation(temp[0], 'x');
