@@ -170,30 +170,34 @@ void Renderer::drawGnomon(Matrix4x4 *model_matrix)
         Colour(0,0,1)
     };
 
+    Matrix4x4 m_viewport;
+    m_viewport[0][0] = width();
+    m_viewport[1][1] = height();
+    m_viewport = translation(Vector3D(width() / 2, height() / 2, 0)) * m_viewport;
+
+    Point3D a, b;
     Point3D p1 = (*model_matrix) * g_world[0];
     p1 = m_view * p1;
     p1 = m_projection * p1;
-    double dist1 = p1[2];
-    Point3D a, b;
 
-    a = Point3D(p1[0] / dist1, p1[1] / dist1, 1);
-
-    a[0] = a[0] * width() + width() / 2;
-    a[1] = a[1] * height() + height() / 2;
+    // homogenize
+    a = scaling(Vector3D(1.0 / p1[2], 1.0 / p1[2], 1.0 / p1[2])) * Point3D(p1[0], p1[1], 1);
+    // transform to viewport
+    a = m_viewport * a;
 
     for (int i = 1; i < 4; i++)
     {
-
         set_colour(colours[i - 1]);
+
         Point3D p2 = (*model_matrix) * g_world[i];
         p2 = m_view * p2;
         p2 = m_projection * p2;
-        double dist2 = p2[2];
 
-        b = Point3D(p2[0] / dist2, p2[1] / dist2, 1);
-
-        b[0] = b[0] * width() + width() / 2;
-        b[1] = b[1] * height() + height() / 2;
+        // homogenize
+        Matrix4x4 m_scale = scaling(Vector3D(1.0 / p2[2], 1.0 / p2[2], 1.0 / p2[2]));
+        b = m_scale * Point3D(p2[0], p2[1], 1);
+        // transform to viewport
+        b = m_viewport * b;
 
         draw_line(Point2D(a[0], a[1]), Point2D(b[0], b[1]));
     }
@@ -204,6 +208,11 @@ void Renderer::drawBox()
     std::vector<Line3D> demoLines = m_cube.getLines();
     Matrix4x4 model_matrix = m_cube.getTransform();
 
+    Matrix4x4 m_viewport;
+    m_viewport[0][0] = width();
+    m_viewport[1][1] = height();
+    m_viewport = translation(Vector3D(width() / 2, height() / 2, 0)) * m_viewport;
+
     for(std::vector<Line3D>::iterator it = demoLines.begin(); it != demoLines.end(); ++it)
     {
         Line3D line = *it;
@@ -213,8 +222,6 @@ void Renderer::drawBox()
         // Fill this in: Apply the view matrix
         p1 = m_view * p1;
         p2 = m_view * p2;
-        float dist1 = p1[2];
-        float dist2 = p2[2];
 
         // Fill this in: Do clipping here...
 
@@ -228,15 +235,15 @@ void Renderer::drawBox()
         p2 = m_projection * p2;
 
         // homogenization
-        p1 =  Point3D(p1[0] / dist1, p1[1] / dist1, 1);
-        p2 =  Point3D(p2[0] / dist2, p2[1] / dist2, 1);
+        Matrix4x4 m_scale1 = scaling(Vector3D(1.0 / p1[2], 1.0 / p1[2], 1.0 / p1[2]));
+        Matrix4x4 m_scale2 = scaling(Vector3D(1.0 / p2[2], 1.0 / p2[2], 1.0 / p2[2]));
+
+        p1 = m_scale1 * Point3D(p1[0], p1[1], 1);
+        p2 = m_scale2 * Point3D(p2[0], p2[1], 1);
 
         // map to viewport
-        p1[0] = p1[0] * width() + width() / 2;
-        p1[1] = p1[1] * height() + height() / 2;
-
-        p2[0] = p2[0] * width() + width() / 2;
-        p2[1] = p2[1] * height() + height() / 2;
+        p1 = m_viewport * p1;
+        p2 = m_viewport * p2;
 
        // Fill this in: Do clipping here (maybe)
 
