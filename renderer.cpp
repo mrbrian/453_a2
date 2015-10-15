@@ -69,6 +69,11 @@ void Renderer::reset_view()
 void Renderer::update_view()
 {
     // Fill me in!
+    Matrix4x4 devCoordTrans;
+    devCoordTrans[0][0] = (m_viewport[1][0] - m_viewport[0][0]) / 2;
+    devCoordTrans[1][1] = (m_viewport[1][1] - m_viewport[0][1]) / 2;
+    devCoordTrans[0][3] = (m_viewport[1][0] + m_viewport[0][0]) / 2;
+    devCoordTrans[1][3] = (m_viewport[1][1] + m_viewport[0][1]) / 2;
 }
 
 void Renderer::setupViewport()
