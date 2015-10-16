@@ -75,6 +75,7 @@ protected:
 
 
 private:
+    void draw_line_3d(Point3D a, Point3D b);
     void update_projection();
     void drawBox();
     void drawGnomon(Matrix4x4 *model_matrix);
@@ -96,7 +97,7 @@ private:
 
     int p_mouseX;
 
-    Vector3D p_view;    // near, far, fov
+    Vector3D p_view;    // fov, near, far
 
     Matrix4x4 m_world;
     Matrix4x4 m_view;
