@@ -175,8 +175,15 @@ int clipTest()
     return 1;
 }
 
-Point3D viewClipTest(double v_l, double v_r, double v_t, double v_b, Matrix4x4 persp, Point3D a, Point3D b, double f)
+Point3D viewClipTest(double v_l, double v_r, double v_t, double v_b, Matrix4x4 persp,
+                     Point3D a, Point3D b, double n, double f)
 {
+    Point3D plane[] = { Point3D(0,0, n), Point3D(0,0, f),
+                        Point3D(0,v_t,0), Point3D(0,v_b,0),
+                        Point3D(v_r,0,0), Point3D(v_l,0,0)};
+    Vector3D normal[] = {Vector3D(0,0,1), Vector3D(0,0,-1),
+                         Vector3D(0,-1,0), Vector3D(0,1,0),
+                         Vector3D(-1,0,0), Vector3D(1,0,0)};
     Point3D pt_i;
 
     float dist1 = a[2];
@@ -188,17 +195,44 @@ Point3D viewClipTest(double v_l, double v_r, double v_t, double v_b, Matrix4x4 p
     a = Point3D(a[0] / dist1, a[1] / dist1, a[2] / dist1);
     b = Point3D(b[0] / dist2, b[1] / dist2, b[2] / dist2);
 
+    for (int i = 0; i < 6; i++)
+    {
+        Point3D p = plane[i];
+        Vector3D n = normal[i];
+        double prod_a = (a - p).dot(n);
+        double prod_b = (b - p).dot(n);
+        double t = -1;
+
+        if (prod_a > 0 && prod_b > 0)
+        {
+            // draw
+        }
+        else if (prod_a < 0 && prod_b < 0)
+        {
+            // skip
+        }
+        else if (prod_a < 0 || prod_b < 0)
+        {
+            t = prod_a / (prod_a - prod_b);
+            pt_i = a + t * (b - a);
+
+            if (prod_a < 0)
+                a = pt_i;
+            else
+                b = pt_i;
+        }
+    }
     return pt_i;
 }
 
 int viewportTest()
 {
-    Matrix4x4 persp = perspective(90.0 / 180 * M_PI, 1, 1, 20);
+    double f = 20;
+    double n = 1;
+    Matrix4x4 persp = perspective(90.0 / 180 * M_PI, 1, n, f);
     Point3D a = Point3D(-10,0,0.1);
     Point3D b = Point3D(20,0,21);
-    double f = 20;
-
-    Point3D pt_i = viewClipTest(0, 1, 0, 1, persp, a, b, f);
+    Point3D pt_i = viewClipTest(0, 1, 0, 1, persp, a, b, n, f);
 
     if (pt_i[0] == 5)
         return 0;

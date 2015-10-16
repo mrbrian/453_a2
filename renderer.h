@@ -13,7 +13,7 @@ class Renderer : public QOpenGLWidget, protected QOpenGLFunctions {
     // informs the qmake that a Qt moc_* file will need to be generated
     Q_OBJECT
 
-public:    
+public:
     // draw mode types
     enum EditMode {VIEW_R, VIEW_T, VIEW_P, MODEL_R, MODEL_S, MODEL_T, VIEWPORT};
 
@@ -23,17 +23,17 @@ public:
     // destructor
     virtual ~Renderer();
 
-	// A useful function that forces this widget to rerender. If you
-	// want to render a new frame, do not call paintGL
-	// directly. Instead call this, which will cause an paintGL
-	// call when the time is right.
-	void invalidate();
+    // A useful function that forces this widget to rerender. If you
+    // want to render a new frame, do not call paintGL
+    // directly. Instead call this, which will cause an paintGL
+    // call when the time is right.
+    void invalidate();
 
-	// *** Fill in these functions (in viewer.cpp) ***
+    // *** Fill in these functions (in viewer.cpp) ***
 
-	// Set the parameters of the current perspective projection using
-	// the semantics of gluPerspective().
-	void set_perspective(double fov, double aspect,
+    // Set the parameters of the current perspective projection using
+    // the semantics of gluPerspective().
+    void set_perspective(double fov, double aspect,
                double near, double far);
 
     void setMode(EditMode mode);
@@ -45,33 +45,33 @@ public slots:
 
 protected:
 
-	// Events we implement
-	// Note that we could use Qt's "signals and slots" mechanism
-	// instead, but for many classes there's a convenient member
-	// function one just needs to define that'll be called with the
-	// event.
+    // Events we implement
+    // Note that we could use Qt's "signals and slots" mechanism
+    // instead, but for many classes there's a convenient member
+    // function one just needs to define that'll be called with the
+    // event.
 
-	// override fundamental drawing functions
+    // override fundamental drawing functions
 
-	// Called when OpenGL is first initialized
-	void initializeGL();
+    // Called when OpenGL is first initialized
+    void initializeGL();
 
-	// Called when the window needs to be redrawn
-	void paintGL();
+    // Called when the window needs to be redrawn
+    void paintGL();
 
-	// Called when the window is resized
-	void resizeGL(int w, int h);
+    // Called when the window is resized
+    void resizeGL(int w, int h);
 
-	// override mouse event functions
+    // override mouse event functions
 
-	// Called when a mouse button is pressed
-	virtual void mousePressEvent(QMouseEvent * event);
+    // Called when a mouse button is pressed
+    virtual void mousePressEvent(QMouseEvent * event);
 
-	// Called when a mouse button is released
-	virtual void mouseReleaseEvent(QMouseEvent * event);
+    // Called when a mouse button is released
+    virtual void mouseReleaseEvent(QMouseEvent * event);
 
-	// Called when the mouse moves
-	virtual void mouseMoveEvent(QMouseEvent * event);protected:
+    // Called when the mouse moves
+    virtual void mouseMoveEvent(QMouseEvent * event);protected:
 
 
 private:
@@ -83,10 +83,10 @@ private:
     void editValue(int x);
     void update_view();
 
-	// *** Fill me in ***
+    // *** Fill me in ***
     // You will want to declare some more matrices here
     Cube m_cube;
-    Matrix4x4 m_cubeGnomon;    
+    Matrix4x4 m_cubeGnomon;
     Matrix4x4 m_mapViewport;
     Point3D * g_world;
 

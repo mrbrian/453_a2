@@ -10,7 +10,7 @@
 
 // constructor
 Renderer::Renderer(QWidget *parent)
-	: QOpenGLWidget(parent)
+    : QOpenGLWidget(parent)
 {
     editMode = MODEL_R;
 
@@ -28,13 +28,13 @@ Renderer::Renderer(QWidget *parent)
 // destructor
 Renderer::~Renderer()
 {
-	// Nothing to do here right now.
+    // Nothing to do here right now.
 }
 
 // Force a rerender
 void Renderer::invalidate()
 {
-	update();
+    update();
 }
 
 void Renderer::set_perspective(double fov, double aspect,
@@ -63,7 +63,7 @@ void Renderer::reset_view()
     m_view = *new Matrix4x4();
     m_view = translation(t_view) * m_view;
     setupViewport();
-    invalidate();    
+    invalidate();
 }
 
 void Renderer::update_view()
@@ -84,7 +84,7 @@ void Renderer::setupViewport()
 
     m_mapViewport = Matrix4x4();
     m_mapViewport[0][0] = width();
-    m_mapViewport[1][1] = -height();
+    m_mapViewport[1][1] = height();
     m_mapViewport = translation(Vector3D(width() / 2, height() / 2, 0)) * m_mapViewport;
 }
 
@@ -105,11 +105,11 @@ void Renderer::initializeGL()
 // called by the Qt GUI system, to allow OpenGL drawing commands
 void Renderer::paintGL()
 {
-	// Here is where your drawing code should go.
+    // Here is where your drawing code should go.
 
-	draw_init(width(), height());
+    draw_init(width(), height());
 
-	/* A few of lines are drawn below to show how it's done. */
+    /* A few of lines are drawn below to show how it's done. */
 
     set_colour(Colour(0.1, 0.1, 0.1));
 
@@ -120,8 +120,8 @@ void Renderer::paintGL()
     set_colour(Colour(0.1, 0.1, 0.1));
     drawBox();
     drawGnomon(&m_cubeGnomon);
-	draw_complete();
-	    
+    draw_complete();
+
 }
 
 // called by the Qt GUI system, to allow OpenGL to respond to widget resizing
@@ -139,7 +139,7 @@ void Renderer::resizeGL(int width, int height)
 void Renderer::mousePressEvent(QMouseEvent * event)
 {
     QTextStream cout(stdout);
-    cout << "Stub: Button " << event->button() << " pressed.\n";    
+    cout << "Stub: Button " << event->button() << " pressed.\n";
     p_mouseX = event->x();
 
     // save buttons
@@ -164,7 +164,7 @@ void Renderer::mouseReleaseEvent(QMouseEvent * event)
 void Renderer::mouseMoveEvent(QMouseEvent * event)
 {
     QTextStream cout(stdout);
-    cout << "Stub: Motion at " << event->x() << ", " << event->y() << ".\n";    
+    cout << "Stub: Motion at " << event->x() << ", " << event->y() << ".\n";
     editValue(event->x() - p_mouseX);
     p_mouseX = event->x();
 
@@ -222,15 +222,20 @@ void Renderer::drawGnomon(Matrix4x4 *model_matrix)
 
 void Renderer::drawBox()
 {
+    double view_l = ((m_viewport[0][0] * 2) - width()) / width();
+    double view_r = ((m_viewport[1][0] * 2) - width()) / width();
+    double view_t = ((m_viewport[0][1] * 2) - height()) / height();
+    double view_b = ((m_viewport[1][1] * 2) - height()) / height();
+
     std::vector<Line3D> demoLines = m_cube.getLines();
     Matrix4x4 model_matrix = m_cube.getTransform();
 
-    double near_ = p_view[0], far_  = p_view[1];
-    Point3D plane[] = {Point3D(0,0, near_), Point3D(0,0, far_),
-                       Point3D(0,1,0), Point3D(0,-1,0),
-                       Point3D(1,0,0), Point3D(-1,0,0)};
+    Point3D plane[] = {Point3D(0,0,p_view[0]), Point3D(0,0,p_view[1]),
+                       Point3D(0,view_t,0), Point3D(0,view_b,0),
+                       Point3D(view_r,0,0), Point3D(view_l,0,0)};
+
     Vector3D normal[] = {Vector3D(0,0,1), Vector3D(0,0,-1),
-                         Vector3D(0,-1,0), Vector3D(0,1,0),
+                         Vector3D(0,1,0), Vector3D(0,-1,0),
                          Vector3D(-1,0,0), Vector3D(1,0,0)};
 
     for(std::vector<Line3D>::iterator it = demoLines.begin(); it != demoLines.end(); ++it)
@@ -277,7 +282,7 @@ void Renderer::drawBox()
                     {
                         a = pt_i;
                     }
-                    if (dotProd_b < 0)
+                    else
                     {
                         b = pt_i;
                     }
@@ -293,11 +298,47 @@ void Renderer::drawBox()
         b = m_projection * b;
 
         // homogenization
-        Matrix4x4 m_scale1 = scaling(Vector3D(1.0 / dist1, 1.0 / dist1, 1.0 / dist1));
-        Matrix4x4 m_scale2 = scaling(Vector3D(1.0 / dist2, 1.0 / dist2, 1.0 / dist2));
+        a = Point3D(a[0] / dist1, a[1] / dist1, a[2] / dist1);
+        b = Point3D(b[0] / dist2, b[1] / dist2, b[2] / dist2);
 
-        a = m_scale1 * Point3D(a[0], a[1], 1);
-        b = m_scale2 * Point3D(b[0], b[1], 1);
+        for (int i = 2; i < 6; i++)
+        {
+            // check if outside
+            {
+                Vector3D n = normal[i];
+                Point3D p = plane[i];
+                double t = (a - p).dot(n) / (a - b).dot(n);
+
+                float dotProd_a = (a - p).dot(n);
+                float dotProd_b = (b - p).dot(n);
+
+                if (dotProd_a > 0 && dotProd_b > 0)         // both inside, line is fine
+                {
+                    continue;
+                }
+                else if (dotProd_a < 0 && dotProd_b < 0)    // both outside, dont draw this line
+                {
+                    skipLine = true;
+                    break;
+                }
+                else if (dotProd_a < 0 || dotProd_b < 0)    // only one is outside
+                {
+                    t = dotProd_a / (dotProd_a - dotProd_b);
+                    pt_i = a + t * (b - a);
+
+                    if (dotProd_a < 0)  // replace with intersection point
+                    {
+                        a = pt_i;
+                    }
+                    if (dotProd_b < 0)
+                    {
+                        b = pt_i;
+                    }
+                }
+            }
+        }
+        if (skipLine)
+            continue;
 
         // map to viewport
         a = m_mapViewport * a;
