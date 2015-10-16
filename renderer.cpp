@@ -69,11 +69,10 @@ void Renderer::reset_view()
 void Renderer::update_view()
 {
     // Fill me in!
-    Matrix4x4 devCoordTrans;
-    devCoordTrans[0][0] = (m_viewport[1][0] - m_viewport[0][0]) / 2;
-    devCoordTrans[1][1] = (m_viewport[1][1] - m_viewport[0][1]) / 2;
-    devCoordTrans[0][3] = (m_viewport[1][0] + m_viewport[0][0]) / 2;
-    devCoordTrans[1][3] = (m_viewport[1][1] + m_viewport[0][1]) / 2;
+   // m_mapViewport[0][0] = (m_viewport[1][0] - m_viewport[0][0]) / 2;
+   // m_mapViewport[1][1] = (m_viewport[1][1] - m_viewport[0][1]) / 2;
+   // m_mapViewport[0][3] = (m_viewport[1][0] + m_viewport[0][0]) / 2;
+   // m_mapViewport[1][3] = (m_viewport[1][1] + m_viewport[0][1]) / 2;
 }
 
 void Renderer::setupViewport()
@@ -85,7 +84,7 @@ void Renderer::setupViewport()
 
     m_mapViewport = Matrix4x4();
     m_mapViewport[0][0] = width();
-    m_mapViewport[1][1] = height();
+    m_mapViewport[1][1] = -height();
     m_mapViewport = translation(Vector3D(width() / 2, height() / 2, 0)) * m_mapViewport;
 }
 
@@ -226,79 +225,87 @@ void Renderer::drawBox()
     std::vector<Line3D> demoLines = m_cube.getLines();
     Matrix4x4 model_matrix = m_cube.getTransform();
 
+    double near_ = p_view[0], far_  = p_view[1];
+    Point3D plane[] = {Point3D(0,0, near_), Point3D(0,0, far_),
+                       Point3D(0,1,0), Point3D(0,-1,0),
+                       Point3D(1,0,0), Point3D(-1,0,0)};
+    Vector3D normal[] = {Vector3D(0,0,1), Vector3D(0,0,-1),
+                         Vector3D(0,-1,0), Vector3D(0,1,0),
+                         Vector3D(-1,0,0), Vector3D(1,0,0)};
+
     for(std::vector<Line3D>::iterator it = demoLines.begin(); it != demoLines.end(); ++it)
     {
         Line3D line = *it;
         // Get the points and apply the model matrix
-        Point3D p1 = model_matrix * line.getP1(), p2 = model_matrix * line.getP2();
+        Point3D a = model_matrix * line.getP1(), b = model_matrix * line.getP2();
 
         // Fill this in: Apply the view matrix
-        p1 = m_view * p1;
-        p2 = m_view * p2;
+        a = m_view * a;
+        b = m_view * b;
 
         // Fill this in: Do clipping here...
+        bool skipLine = false;
+        Point3D pt_i;
 
-        double near_ = p_view[0];
-        double far_  = p_view[1];
+        // clip near and far planes
+        for (int i = 0; i < 2; i++)
+        {
+            // check if outside
+            {
+                Vector3D n = normal[i];
+                Point3D p = plane[i];
+                double t = (a - p).dot(n) / (a - b).dot(n);
 
-        // can check the near and far planes!
-        if (p1[2] > far_ && p2[2] > far_)
+                float dotProd_a = (a - p).dot(n);
+                float dotProd_b = (b - p).dot(n);
+
+                if (dotProd_a > 0 && dotProd_b > 0)         // both inside, line is fine
+                {
+                    continue;
+                }
+                else if (dotProd_a < 0 && dotProd_b < 0)    // both outside, dont draw this line
+                {
+                    skipLine = true;
+                    break;
+                }
+                else if (dotProd_a < 0 || dotProd_b < 0)    // only one is outside
+                {
+                    t = dotProd_a / (dotProd_a - dotProd_b);
+                    pt_i = a + t * (b - a);
+
+                    if (dotProd_a < 0)  // replace with intersection point
+                    {
+                        a = pt_i;
+                    }
+                    if (dotProd_b < 0)
+                    {
+                        b = pt_i;
+                    }
+                }
+            }
+        }
+        if (skipLine)
             continue;
-        if (p1[2] < near_ && p2[2] < near_)
-            continue;
 
-        Point3D temp;
-        // if one too far
-        if (p1[2] > far_ || p1[2] < near_)
-        {
-            temp = p1;
-            p1 = p2;
-            p2 = temp;
-        }
-
-        if (p2[2] > far_)
-        {
-            Vector3D n = Vector3D(0,0,-1);
-            Point3D a = p1;
-            Point3D b = p2;
-            Point3D p = Point3D(0, 0, far_);
-            double t = (a - p).dot(n) / (a - b).dot(n);
-
-            Point3D q = a + t * (b - a);
-            p2 = q;
-        }
-
-        if (p2[2] < near_)
-        {
-            Vector3D n = Vector3D(0,0,1);
-            Point3D a = p1;
-            Point3D b = p2;
-            Point3D p = Point3D(0, 0, near_);
-            double t = (a - p).dot(n) / (a - b).dot(n);
-
-            Point3D q = a + t * (b - a);
-            p2 = q;
-        }
-
-        double dist1 = p1[2], dist2 = p2[2];
+        double dist1 = a[2], dist2 = b[2];
         // Apply the projection matrix
-        p1 = m_projection * p1;
-        p2 = m_projection * p2;
+        a = m_projection * a;
+        b = m_projection * b;
 
         // homogenization
         Matrix4x4 m_scale1 = scaling(Vector3D(1.0 / dist1, 1.0 / dist1, 1.0 / dist1));
         Matrix4x4 m_scale2 = scaling(Vector3D(1.0 / dist2, 1.0 / dist2, 1.0 / dist2));
 
-        p1 = m_scale1 * Point3D(p1[0], p1[1], 1);
-        p2 = m_scale2 * Point3D(p2[0], p2[1], 1);
+        a = m_scale1 * Point3D(a[0], a[1], 1);
+        b = m_scale2 * Point3D(b[0], b[1], 1);
 
         // map to viewport
-        p1 = m_mapViewport * p1;
-        p2 = m_mapViewport * p2;
+        a = m_mapViewport * a;
+        b = m_mapViewport * b;
 
        // Fill this in: Do clipping here (maybe)
 
-       draw_line(Point2D(p1[0], p1[1]), Point2D(p2[0], p2[1]));
+       draw_line(Point2D(a[0], a[1]), Point2D(b[0], b[1]));
     }
 }
 
@@ -347,6 +354,7 @@ void Renderer::editValue(int value)
         gnomonTrans = modelTrans = translation(temp);
         break;
     case VIEWPORT:
+        update_view();
         break;
     }
     m_cube.appendTransform(modelTrans);

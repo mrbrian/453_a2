@@ -101,7 +101,10 @@ int perspMatrix()
 {
     Matrix4x4 p = perspective(90.0 / 180 * M_PI, 1, 1, 100);
     Point3D result = *new Point3D(10,0,100);
-    Point3D result2 = *new Point3D(100,0,100);
+    Point3D result2 = *new Point3D(200,0,200);
+    double dist1 = 100;
+    double dist2 = 200;
+
     result = p * result;
     result2 = p * result2;
 
@@ -118,10 +121,98 @@ int perspMatrix()
     return 0;
 }
 
+Point3D clipLine(Matrix4x4 persp, Point3D a, Point3D b, Point3D p, Vector3D n)
+{
+    Point3D pt_i;
+
+    a = persp * a;
+    b = persp * b;
+
+    double prod_a = (a - p).dot(n);
+    double prod_b = (b - p).dot(n);
+    double t = -1;
+
+    if (prod_a > 0 && prod_b > 0)
+    {
+        // draw
+    }
+    else if (prod_a < 0 && prod_b < 0)
+    {
+        // skip
+    }
+    else if (prod_a < 0 || prod_b < 0)
+    {
+        t = prod_a / (prod_a - prod_b);
+        pt_i = a + t * (b - a);
+    }
+    return pt_i;
+}
+
+bool equals(const Point3D& a, const Point3D& b)
+{
+  if (!compare(a[0], b[0])
+      && !compare(a[1], b[1])
+      && !compare(a[2], b[2]))
+      return true;
+  else
+      return false;
+}
+
+int clipTest()
+{
+    Matrix4x4 persp = perspective(90.0 / 180 * M_PI, 1, 1, 100);
+
+    Point3D p1 = Point3D(2.5,0,5);
+    Point3D p2 = Point3D(40,0,200);
+    Point3D p = Point3D(0,0,10);
+    Vector3D n = Vector3D(0,0,-1);
+
+    Point3D i1 = clipLine(persp, p1, p2, p, n);
+    Point3D i2 = clipLine(persp, p2, p1, p, n);
+
+    if (equals(i1, i2))
+        return 0;
+    return 1;
+}
+
+Point3D viewClipTest(double v_l, double v_r, double v_t, double v_b, Matrix4x4 persp, Point3D a, Point3D b, double f)
+{
+    Point3D pt_i;
+
+    float dist1 = a[2];
+    float dist2 = b[2];
+
+    a = persp * a;
+    b = persp * b;
+
+    a = Point3D(a[0] / dist1, a[1] / dist1, a[2] / dist1);
+    b = Point3D(b[0] / dist2, b[1] / dist2, b[2] / dist2);
+
+    return pt_i;
+}
+
+int viewportTest()
+{
+    Matrix4x4 persp = perspective(90.0 / 180 * M_PI, 1, 1, 20);
+    Point3D a = Point3D(-10,0,0.1);
+    Point3D b = Point3D(20,0,21);
+    double f = 20;
+
+    Point3D pt_i = viewClipTest(0, 1, 0, 1, persp, a, b, f);
+
+    if (pt_i[0] == 5)
+        return 0;
+    return 1;
+}
+
 float tests()
 {
     double f = tan(M_PI_4);
 //    return f;
+    if (viewportTest())
+        return 1;
+    if (clipTest())
+        return 1;
     if (perspMatrix())
         return 1;
     if (rotateMatrix_Z())
