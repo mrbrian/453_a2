@@ -239,12 +239,26 @@ int viewportTest()
     return 1;
 }
 
+int viewportTest2()
+{
+    int w = 300;
+    int h = 300;
+    Point2D v1 = Point2D(15, 15);
+    Point2D v2 = Point2D(285, 285);
+
+    double view_l = (v1[0] * 2 - w) / w;
+
+    return 1;
+}
+
 float tests()
 {
     double f = tan(M_PI_4);
 //    return f;
-    if (viewportTest())
+    if (viewportTest2())
         return 1;
+   // if (viewportTest())
+   //     return 1;
     if (clipTest())
         return 1;
     if (perspMatrix())

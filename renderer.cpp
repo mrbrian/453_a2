@@ -53,7 +53,7 @@ void Renderer::set_perspective(double fov, double aspect,
 void Renderer::reset_view()
 {
     // Fill me in!
-    Vector3D t_view = Vector3D(0, 0, 20);
+    Vector3D t_view = Vector3D(0, 0, 10);
     p_view = Vector3D(DEF_VIEW_NEAR, DEF_VIEW_FAR, DEF_VIEW_FOV);
     update_projection();
 
@@ -83,8 +83,8 @@ void Renderer::setupViewport()
     m_viewport[1][1] = height() * 0.95;
 
     m_mapViewport = Matrix4x4();
-    m_mapViewport[0][0] = width();
-    m_mapViewport[1][1] = height();
+    m_mapViewport[0][0] = width() / 2;
+    m_mapViewport[1][1] = height() / 2;
     m_mapViewport = translation(Vector3D(width() / 2, height() / 2, 0)) * m_mapViewport;
 }
 
