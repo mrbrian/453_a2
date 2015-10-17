@@ -227,26 +227,28 @@ Point3D viewClipTest(double v_l, double v_r, double v_t, double v_b, Matrix4x4 p
 
 int viewportTest()
 {
-    double f = 20;
-    double n = 1;
-    Matrix4x4 persp = perspective(90.0 / 180 * M_PI, 1, n, f);
-    Point3D a = Point3D(-10,0,0.1);
-    Point3D b = Point3D(20,0,21);
-    Point3D pt_i = viewClipTest(0, 1, 0, 1, persp, a, b, n, f);
+    int width = 300;
+    int height = 300;
+    float v_l, v_r, v_t, v_b;
+    v_l = 300 * 0.05;;
+    v_t = 300 * 0.05;
+    v_r = 300 * 0.95;
+    v_b = 300 * 0.95;
 
-    if (pt_i[0] == 5)
+    Matrix4x4 m_screenCoords;
+    m_screenCoords[0][0] = 300 / 2;
+    m_screenCoords[1][1] = 300 / 2;
+    m_screenCoords = translation(Vector3D(width / 2, height / 2, 0)) * m_screenCoords;
+
+    Matrix4x4 ndc = m_screenCoords.invert();
+
+    Point3D p1 = Point3D(v_l, v_t, 1);
+    Point3D p2 = Point3D(v_l, v_t, 1);
+    p1 = ndc * p1;
+    p2 = ndc * p1;
+
+    if (p1[0] == 0.025)
         return 0;
-    return 1;
-}
-
-int viewportTest2()
-{
-    int w = 300;
-    int h = 300;
-    Point2D v1 = Point2D(15, 15);
-    Point2D v2 = Point2D(285, 285);
-
-    double view_l = (v1[0] * 2 - w) / w;
 
     return 1;
 }
@@ -254,11 +256,9 @@ int viewportTest2()
 float tests()
 {
     double f = tan(M_PI_4);
-//    return f;
-    if (viewportTest2())
+
+    if (viewportTest())
         return 1;
-   // if (viewportTest())
-   //     return 1;
     if (clipTest())
         return 1;
     if (perspMatrix())
@@ -313,17 +313,19 @@ Window::Window(QWidget * parent) :
     mModeMenu = menuBar()->addMenu(tr("&Mode"));
     mViewMenu = mModeMenu->addMenu(tr("&View"));
     mModelMenu = mModeMenu->addMenu(tr("&Model"));
+    // Add viewport rotate, translate, perspective to View submenu
     mViewMenu->addAction(mVRotateAction);
     mViewMenu->addAction(mVTransAction);
     mViewMenu->addAction(mVPerspAction);
 
+    // Add model rotate, translate, scale to Model submenu
     mModelMenu->addAction(mMRotateAction);
     mModelMenu->addAction(mMTransAction);
     mModelMenu->addAction(mMScaleAction);
 
-    mModeMenu->addAction(mViewportAction);
+    mModeMenu->addAction(mViewportAction);  // add viewport editing
 
-    // Setup the quit button
+    // Setup the mode label
     modeLabel = new QLabel(this);
     layout->addWidget(modeLabel);
     layout->setAlignment(modeLabel, Qt::AlignBottom);
@@ -357,36 +359,43 @@ void Window::createActions()
     connect(mModeGroup, SIGNAL(triggered(QAction *)), this, SLOT(setMode(QAction *)));
     mModeGroup->setExclusive(true);
 
+    // Rotates the view
     mVRotateAction = new QAction(tr("&Rotate"), this);
     mVRotateAction->setShortcut(QKeySequence(Qt::Key_O));
     mVRotateAction->setStatusTip(tr("Rotates the view"));
     mModeGroup->addAction(mVRotateAction);
 
+    // Translates the view
     mVTransAction = new QAction(tr("&Translate"), this);
     mVTransAction->setShortcut(QKeySequence(Qt::Key_N));
     mVTransAction->setStatusTip(tr("Translates the view"));
     mModeGroup->addAction(mVTransAction);
 
+    // Adjusts the perspective projection
     mVPerspAction = new QAction(tr("&Perspective"), this);
     mVPerspAction->setShortcut(QKeySequence(Qt::Key_P));
     mVPerspAction->setStatusTip(tr("Adjust the perspective"));
     mModeGroup->addAction(mVPerspAction);
 
+    // Rotates the model
     mMRotateAction = new QAction(tr("&Rotate"), this);
     mMRotateAction->setShortcut(QKeySequence(Qt::Key_R));
     mMRotateAction->setStatusTip(tr("Rotates the model"));
     mModeGroup->addAction(mMRotateAction);
 
+    // Translates the model
     mMTransAction = new QAction(tr("&Translate"), this);
     mMTransAction->setShortcut(QKeySequence(Qt::Key_T));
     mMTransAction->setStatusTip(tr("Translates the model"));
     mModeGroup->addAction(mMTransAction);
 
+    // Scales the model
     mMScaleAction = new QAction(tr("&Scale"), this);
     mMScaleAction->setShortcut(QKeySequence(Qt::Key_S));
     mMScaleAction->setStatusTip(tr("Scale the model "));
     mModeGroup->addAction(mMScaleAction);
 
+    // make nice radio buttons
     mVRotateAction->setCheckable(true);
     mVTransAction->setCheckable(true);
     mVPerspAction->setCheckable(true);
@@ -395,14 +404,17 @@ void Window::createActions()
     mMTransAction->setCheckable(true);
     mMScaleAction->setCheckable(true);
 
+    // set default radio button
     mMRotateAction->setChecked(true);
 
+    // adjust the viewport window
     mViewportAction = new QAction(tr("&Viewport"), this);
     mViewportAction->setShortcut(QKeySequence(Qt::Key_V));
     mViewportAction->setStatusTip(tr("Adjust the viewport"));
     mModeGroup->addAction(mViewportAction);
 }
 
+// Forward the editing mode to the renderer, and updates the mode text label
 void Window::setMode(QAction * action)
 {
     if (action == mVRotateAction)

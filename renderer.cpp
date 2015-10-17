@@ -5,7 +5,7 @@
 #include "a2.h"
 
 #define DEF_VIEW_NEAR       5
-#define DEF_VIEW_FAR        40
+#define DEF_VIEW_FAR        15
 #define DEF_VIEW_FOV        30
 
 // constructor
@@ -82,10 +82,10 @@ void Renderer::setupViewport()
     m_viewport[1][0] = width() * 0.95;
     m_viewport[1][1] = height() * 0.95;
 
-    m_mapViewport = Matrix4x4();
-    m_mapViewport[0][0] = width() / 2;
-    m_mapViewport[1][1] = -height() / 2;
-    m_mapViewport = translation(Vector3D(width() / 2, height() / 2, 0)) * m_mapViewport;
+    m_screenCoords = Matrix4x4();
+    m_screenCoords[0][0] = width() / 2;
+    m_screenCoords[1][1] = -height() / 2;
+    m_screenCoords = translation(Vector3D(width() / 2, height() / 2, 0)) * m_screenCoords;
 }
 
 void Renderer::update_projection()
@@ -144,6 +144,7 @@ void Renderer::mousePressEvent(QMouseEvent * event)
 
     // save buttons
     mouseButtons = event->buttons();
+    // define new viewport coords
     if (editMode == VIEWPORT)
     {
         m_viewport[0] = Point2D(event->x(), event->y());
@@ -167,22 +168,31 @@ void Renderer::mouseMoveEvent(QMouseEvent * event)
     QTextStream cout(stdout);
     cout << "Stub: Motion at " << event->x() << ", " << event->y() << ".\n";
     editValue(event->x() - p_mouseX);
-    p_mouseX = event->x();
 
     if (editMode == VIEWPORT)
     {
-        int min_x, max_x;
-        int min_y, max_y;
+        int c_x = event->x();
+        int c_y = event->y();
 
-        min_x = fmin(m_viewport[0][0], event->x());
-        max_x = fmax(m_viewport[1][0], event->x());
+        if (c_x > m_viewport[0][0])
+        {
+            m_viewport[1][0] = c_x;
+        }
+        else
+        {
+            m_viewport[0][0] = c_x;
+        }
 
-        min_y = fmin(m_viewport[0][1], event->y());
-        max_y = fmax(m_viewport[1][1], event->y());
-
-        m_viewport[0] = Point2D(min_x, min_y);
-        m_viewport[1] = Point2D(max_x, max_y);
+        if (c_y > m_viewport[0][1])
+        {
+            m_viewport[1][1] = c_y;
+        }
+        else
+        {
+            m_viewport[0][1] = c_y;
+        }
     }
+    p_mouseX = event->x();
 }
 
 void Renderer::drawViewport()
@@ -216,6 +226,9 @@ void Renderer::drawGnomon(Matrix4x4 *model_matrix)
 
 void Renderer::draw_line_3d(Point3D a, Point3D b)
 {
+    Point3D test = Point3D(m_viewport[0][0], m_viewport[0][1], 1);
+    test = m_screenCoords.invert() * test;
+
     double view_l = ((m_viewport[0][0] * 2) - width()) / width();
     double view_r = ((m_viewport[1][0] * 2) - width()) / width();
     double view_t = ((m_viewport[0][1] * 2) - height()) / height();
@@ -326,8 +339,8 @@ void Renderer::draw_line_3d(Point3D a, Point3D b)
         return;
 
     // map to viewport
-    a = m_mapViewport * a;
-    b = m_mapViewport * b;
+    a = m_screenCoords * a;
+    b = m_screenCoords * b;
 
    // Fill this in: Do clipping here (maybe)
 

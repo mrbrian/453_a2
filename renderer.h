@@ -88,7 +88,7 @@ private:
     // You will want to declare some more matrices here
     Cube m_cube;
     Matrix4x4 m_cubeGnomon;
-    Matrix4x4 m_mapViewport;
+    Matrix4x4 m_screenCoords;
     Point3D * g_world;
 
     EditMode editMode;
