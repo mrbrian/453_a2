@@ -162,8 +162,8 @@ int clipTest()
 {
     Matrix4x4 persp = perspective(90.0 / 180 * M_PI, 1, 1, 100);
 
-    Point3D p1 = Point3D(2.5,0,5);
-    Point3D p2 = Point3D(40,0,200);
+    Point3D p1 = Point3D(2.5,5,5);
+    Point3D p2 = Point3D(40,-5,200);
     Point3D p = Point3D(0,0,10);
     Vector3D n = Vector3D(0,0,-1);
 
@@ -243,11 +243,9 @@ int viewportTest()
     Matrix4x4 ndc = m_screenCoords.invert();
 
     Point3D p1 = Point3D(v_l, v_t, 1);
-    Point3D p2 = Point3D(v_l, v_t, 1);
     p1 = ndc * p1;
-    p2 = ndc * p1;
 
-    if (p1[0] == 0.025)
+    if (!compare(p1[0], -0.9))
         return 0;
 
     return 1;

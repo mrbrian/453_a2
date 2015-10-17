@@ -226,20 +226,25 @@ void Renderer::drawGnomon(Matrix4x4 *model_matrix)
 
 void Renderer::draw_line_3d(Point3D a, Point3D b)
 {
-    Point3D test = Point3D(m_viewport[0][0], m_viewport[0][1], 1);
-    test = m_screenCoords.invert() * test;
+    Matrix4x4 inv = m_screenCoords.invert();
 
-    double view_l = ((m_viewport[0][0] * 2) - width()) / width();
-    double view_r = ((m_viewport[1][0] * 2) - width()) / width();
-    double view_t = ((m_viewport[0][1] * 2) - height()) / height();
-    double view_b = ((m_viewport[1][1] * 2) - height()) / height();
+    Point3D ndc_view_1 = Point3D(m_viewport[0][0], m_viewport[0][1], 1);
+    ndc_view_1 = inv * ndc_view_1;
+
+    Point3D ndc_view_2 = Point3D(m_viewport[1][0], m_viewport[1][1], 1);
+    ndc_view_2 = inv * ndc_view_2;
+
+    double view_l = ndc_view_1[0];
+    double view_r = ndc_view_2[0];
+    double view_t = ndc_view_1[1];
+    double view_b = ndc_view_2[1];
 
     Point3D plane[] = {Point3D(0,0,p_view[1]), Point3D(0,0,p_view[2]),
                        Point3D(0,view_t,0), Point3D(0,view_b,0),
                        Point3D(view_r,0,0), Point3D(view_l,0,0)};
 
     Vector3D normal[] = {Vector3D(0,0,1), Vector3D(0,0,-1),
-                         Vector3D(0,1,0), Vector3D(0,-1,0),
+                         Vector3D(0,-1,0), Vector3D(0,1,0),
                          Vector3D(-1,0,0), Vector3D(1,0,0)};
 
     // Fill this in: Apply the view matrix
