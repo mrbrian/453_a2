@@ -21,33 +21,65 @@ To run the program, on the terminal enter the following command:
 <Insert a precise user manual on how to interact with the program; eg. 
 short-cut keys, mouse movements, menu items, widgets, etc.>
 
+File Menu
+	Reset (A) - Resets the model, view, and viewport.
+	Quit (Q) - Quits the application
+
+Mode Menu
+	(View submenu)
+		Rotate (O) - LMB: x-axis, MMB: y-axis, RMB: z-axis
+		Translate (N) - LMB: x-axis, MMB: y-axis, RMB: z-axis
+		Perspective (P) - LMB: FOV, MMB: near z-plane, RMB: far z-plane
+	(Model submenu)
+		Rotate (R) - LMB: x-axis, MMB: y-axis, RMB: z-axis
+		Translate (T) - LMB: x-axis, MMB: y-axis, RMB: z-axis
+		Scale (S) - LMB: x-axis, MMB: y-axis, RMB: z-axis
+	Viewport (V)
+
+
 == 3. ALGORITHMS and DESIGN DECISIONS: ===
 
 <Insert a description of the algorithms created and design decisions taken>
 
+Used a single Matrix4x4 instead of storing scale, rotation, translation of the cube separately since 
+the assignment says not to limit the amount of accumulated transforms.
+
+//Stored the cube gnomon transform separate from cube class.
+
+
 === 4. FILES SUBMITTED: ===
 
-<Insert a list of files that have been submitted by the assignment in case
-there is a discrepancy in the submission>
+a2.cpp
+a2.h
+algebra.cpp
+algebra.h
+draw.cpp
+draw.h
+main.cpp
+renderer.cpp
+renderer.h
+window.cpp
+window.h
+README
 
 === 5. PROGRAM ASSUMPTIONS: ===
 
-<Insert a short description of any assumptions made>
+It is ok to have View and Model submenus. (as seen in assignment example video)
 
 === 6. DECLARATION AND IMAGE PERMISSION: ===
 
 <Initial the following:>
 
-__ I have read the regulations regarding plagarism. I affirm with my initials
+_BY_ I have read the regulations regarding plagarism. I affirm with my initials
 that I have worked on my own solution to this assignment, and the code I am
 submitting is my own.
 
 <Mark with an X if desired. No marks will be deducted either way>
 
-__ I grant the instructor and/or TAs permission to use images submitted and/or
+_X_ I grant the instructor and/or TAs permission to use images submitted and/or
    assignment screenshots for future CPSC453 courses.
 
-__ If permission has been granted above, I would prefer the images to remain 
+_X_ If permission has been granted above, I would prefer the images to remain 
    annonymous. <Otherwise credit will be given, as is due>
 
 __
