@@ -69,10 +69,6 @@ void Renderer::reset_view()
 void Renderer::update_view()
 {
     // Fill me in!
-   // m_mapViewport[0][0] = (m_viewport[1][0] - m_viewport[0][0]) / 2;
-   // m_mapViewport[1][1] = (m_viewport[1][1] - m_viewport[0][1]) / 2;
-   // m_mapViewport[0][3] = (m_viewport[1][0] + m_viewport[0][0]) / 2;
-   // m_mapViewport[1][3] = (m_viewport[1][1] + m_viewport[0][1]) / 2;
 }
 
 void Renderer::setupViewport()
@@ -304,6 +300,7 @@ void Renderer::draw_line_3d(Point3D a, Point3D b)
     a = Point3D(a[0] / dist1, a[1] / dist1, a[2] / dist1);
     b = Point3D(b[0] / dist2, b[1] / dist2, b[2] / dist2);
 
+    // clip to the top/bot/left/right planes
     for (int i = 2; i < 6; i++)
     {
         // check if outside
@@ -346,8 +343,6 @@ void Renderer::draw_line_3d(Point3D a, Point3D b)
     // map to viewport
     a = m_screenCoords * a;
     b = m_screenCoords * b;
-
-   // Fill this in: Do clipping here (maybe)
 
    draw_line(Point2D(a[0], a[1]), Point2D(b[0], b[1]));
 }
