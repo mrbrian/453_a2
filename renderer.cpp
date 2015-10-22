@@ -222,15 +222,15 @@ void Renderer::drawGnomon(Matrix4x4 *model_matrix)
 
 void Renderer::draw_line_3d(Point3D a, Point3D b)
 {
-    Matrix4x4 inv = m_screenCoords.invert();
+    Matrix4x4 invTransform = m_screenCoords.invert();   // get transform to undo the screen-space transform
 
     Point3D ndc_view_1 = Point3D(m_viewport[0][0], m_viewport[0][1], 1);
-    ndc_view_1 = inv * ndc_view_1;
+    ndc_view_1 = invTransform * ndc_view_1;
 
     Point3D ndc_view_2 = Point3D(m_viewport[1][0], m_viewport[1][1], 1);
-    ndc_view_2 = inv * ndc_view_2;
+    ndc_view_2 = invTransform * ndc_view_2;
 
-    double view_l = ndc_view_1[0];
+    double view_l = ndc_view_1[0];      // viewport boundaries in NDC
     double view_r = ndc_view_2[0];
     double view_t = ndc_view_1[1];
     double view_b = ndc_view_2[1];
@@ -243,11 +243,11 @@ void Renderer::draw_line_3d(Point3D a, Point3D b)
                          Vector3D(0,-1,0), Vector3D(0,1,0),
                          Vector3D(-1,0,0), Vector3D(1,0,0)};
 
-    // Fill this in: Apply the view matrix
+    // Apply the view matrix
     a = m_view * a;
     b = m_view * b;
 
-    // Fill this in: Do clipping here...
+    // Do clipping here...
     bool skipLine = false;
     Point3D pt_i;
 
@@ -291,14 +291,16 @@ void Renderer::draw_line_3d(Point3D a, Point3D b)
     if (skipLine)
         return;
 
-    double dist1 = a[2], dist2 = b[2];
-    // Apply the projection matrix
-    a = m_projection * a;
-    b = m_projection * b;
+    // Apply the projection matrix to 4D points
+    Point4D a_4 = Point4D(a);
+    Point4D b_4 = Point4D(b);
 
-    // homogenization
-    a = Point3D(a[0] / dist1, a[1] / dist1, a[2] / dist1);
-    b = Point3D(b[0] / dist2, b[1] / dist2, b[2] / dist2);
+    a_4 = m_projection * a_4;
+    b_4 = m_projection * b_4;
+
+    // homogenization & store back into 3D points
+    a = Point3D(a_4[0] / a_4[3], a_4[1] / a_4[3], a_4[2] / a_4[3]);
+    b = Point3D(b_4[0] / b_4[3], b_4[1] / b_4[3], b_4[2] / b_4[3]);
 
     // clip to the top/bot/left/right planes
     for (int i = 2; i < 6; i++)
@@ -326,7 +328,7 @@ void Renderer::draw_line_3d(Point3D a, Point3D b)
                 t = dotProd_a / (dotProd_a - dotProd_b);
                 pt_i = a + t * (b - a);
 
-                if (dotProd_a < 0)  // replace with intersection point
+                if (dotProd_a < 0)          // replace with intersection point
                 {
                     a = pt_i;
                 }
@@ -364,20 +366,20 @@ void Renderer::drawBox()
 
 void Renderer::editValue(int value)
 {
-    Vector3D temp;
-    float delta = (float)value / 100;
+    Vector3D delta;
+    float d = (float)value / 100;
 
     if (mouseButtons & Qt::LeftButton)      // LB rotates along x-axis
     {
-        temp[0] = delta;
+        delta[0] = d;
     }
     if (mouseButtons & Qt::MiddleButton)    // MB rotates along y-axis
     {
-        temp[1] = delta;
+        delta[1] = d;
     }
     if (mouseButtons & Qt::RightButton)     // RB rotates along z-axis
     {
-        temp[2] = delta;
+        delta[2] = d;
     }
 
     Matrix4x4 modelTrans;
@@ -386,25 +388,25 @@ void Renderer::editValue(int value)
     switch(editMode)
     {
     case VIEW_R:
-        m_view = rotation(temp[2], 'z')
-                * rotation(temp[1], 'y')
-                * rotation(temp[0], 'x') * m_view;
+        m_view = rotation(delta[2], 'z')
+                * rotation(delta[1], 'y')
+                * rotation(delta[0], 'x') * m_view;
         break;
     case VIEW_T:
-        m_view = translation(temp) * m_view;
+        m_view = translation(delta) * m_view;
         break;
     case VIEW_P:
-        p_view = p_view + temp;
+        p_view = p_view + delta;
         update_projection();
         break;
     case MODEL_R:
-        gnomonTrans = modelTrans = rotation(temp[2], 'z') * rotation(temp[1], 'y') * rotation(temp[0], 'x');
+        gnomonTrans = modelTrans = rotation(delta[2], 'z') * rotation(delta[1], 'y') * rotation(delta[0], 'x');
         break;
     case MODEL_S:
-        modelTrans = scaling(Vector3D(1,1,1) + temp);
+        modelTrans = scaling(Vector3D(1,1,1) + delta);
         break;
     case MODEL_T:
-        gnomonTrans = modelTrans = translation(temp);
+        gnomonTrans = modelTrans = translation(delta);
         break;
     case VIEWPORT:
         update_view();
