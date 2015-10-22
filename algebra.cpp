@@ -161,7 +161,7 @@ Point3D &Line3D::getP2()
 
 Cube::Cube()
 {
-    verts_.push_back(Point3D(-1,1,-1));
+    verts_.push_back(Point3D(-1,1,-1));     // populate vertex list
     verts_.push_back(Point3D(-1,1,1));
     verts_.push_back(Point3D(-1,1,1));
     verts_.push_back(Point3D(1,1,1));

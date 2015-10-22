@@ -75,33 +75,31 @@ protected:
 
 
 private:
-    void draw_line_3d(Point3D a, Point3D b);
-    void update_projection();
-    void drawBox();
-    void drawGnomon(Matrix4x4 *model_matrix);
-    void setupViewport();
-    void drawViewport();
-    void editValue(int x);
-    void update_view();
+    void draw_line_3d(Point3D a, Point3D b);    // draw a 3D line between 2 points, does projection & clipping
+    void update_projection();                   // update the perspective projection
+    void drawCube();                             // draw the cube
+    void drawGnomon(Matrix4x4 *model_matrix);   // draw a gnomon using a given model transform
+    void setupViewport();               // initialize viewport settings
+    void drawViewport();                // draw the viewport bounds
+    void modifyValue(int value);        // takes a mouse movement and modifies the appropriate value
 
     // *** Fill me in ***
     // You will want to declare some more matrices here
     Cube m_cube;
-    Matrix4x4 m_cubeGnomon;
-    Matrix4x4 m_screenCoords;
-    Point3D * g_world;
+    Matrix4x4 m_cubeGnomon;     // transform for cube's gnomon
+    Matrix4x4 m_screenCoords;   // transform for converting NDC to screencoords
+    Point3D * g_gnomon;         // verts of the gnomon
 
-    EditMode editMode;
+    EditMode editMode;          // current editing mode {VIEW_R, VIEW_T, VIEW_P, MODEL_R, MODEL_S, MODEL_T, VIEWPORT}
 
-    Point2D m_viewport[2];
+    Point2D m_viewport[2];      // the top left, bot right of viewport in screencoords
 
-    int p_mouseX;
+    int p_mouseX;               // previous mouse X
 
-    Vector3D p_view;    // fov, near, far
+    Vector3D p_view;            // fov, near, far
 
-    Matrix4x4 m_world;
-    Matrix4x4 m_view;
-    Matrix4x4 m_projection;
+    Matrix4x4 m_view;           // view matrix
+    Matrix4x4 m_projection;     // projection matrix
 
     // mouse buttons that are currently pressed
     int mouseButtons;

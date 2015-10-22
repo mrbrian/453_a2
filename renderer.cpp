@@ -7,6 +7,7 @@
 #define DEF_VIEW_NEAR       5
 #define DEF_VIEW_FAR        15
 #define DEF_VIEW_FOV        30
+#define DEF_VIEW_DIST       10
 
 // constructor
 Renderer::Renderer(QWidget *parent)
@@ -14,7 +15,7 @@ Renderer::Renderer(QWidget *parent)
 {
     editMode = MODEL_R;
 
-    g_world = new Point3D[4]{
+    g_gnomon = new Point3D[4]{     // the 4 points of the gnomon
         *new Point3D(0,0,0),
         *new Point3D(0.5,0,0),
         *new Point3D(0,0.5,0),
@@ -40,8 +41,6 @@ void Renderer::invalidate()
 void Renderer::set_perspective(double fov, double aspect,
                              double n, double f)
 {
-    // Fill me in!
-
     m_projection[0][0] = 1 / (aspect * tan(fov / 2));
     m_projection[1][1] = 1 / (aspect * tan(fov / 2));
     m_projection[2][2] = (f + n) / (f - n);
@@ -52,9 +51,8 @@ void Renderer::set_perspective(double fov, double aspect,
 
 void Renderer::reset_view()
 {
-    // Fill me in!
-    Vector3D t_view = Vector3D(0, 0, 10);
-    p_view = Vector3D(DEF_VIEW_FOV, DEF_VIEW_NEAR, DEF_VIEW_FAR);
+    Vector3D t_view = Vector3D(0, 0, DEF_VIEW_DIST);
+    p_view = Vector3D(DEF_VIEW_FOV, DEF_VIEW_NEAR, DEF_VIEW_FAR);       // use default values
     update_projection();
 
     m_cube.resetTransform();
@@ -63,12 +61,7 @@ void Renderer::reset_view()
     m_view = *new Matrix4x4();
     m_view = translation(t_view) * m_view;
     setupViewport();
-    invalidate();
-}
-
-void Renderer::update_view()
-{
-    // Fill me in!
+    invalidate();           // trigger window update
 }
 
 void Renderer::setupViewport()
@@ -78,7 +71,7 @@ void Renderer::setupViewport()
     m_viewport[1][0] = width() * 0.95;
     m_viewport[1][1] = height() * 0.95;
 
-    m_screenCoords = Matrix4x4();
+    m_screenCoords = Matrix4x4();           // make transform for converting NDC space to screenspace
     m_screenCoords[0][0] = width() / 2;
     m_screenCoords[1][1] = -height() / 2;
     m_screenCoords = translation(Vector3D(width() / 2, height() / 2, 0)) * m_screenCoords;
@@ -108,16 +101,16 @@ void Renderer::paintGL()
     /* A few of lines are drawn below to show how it's done. */
 
     set_colour(Colour(0.1, 0.1, 0.1));
-
     drawViewport();
 
     Matrix4x4 m;
-    drawGnomon(&m);
-    set_colour(Colour(0.1, 0.1, 0.1));
-    drawBox();
-    drawGnomon(&m_cubeGnomon);
-    draw_complete();
+    drawGnomon(&m);         // m is the world transform  (identity since never changes)
 
+    set_colour(Colour(0.1, 0.1, 0.1));
+    drawCube();                         // draw cube
+    drawGnomon(&m_cubeGnomon);          // draw gnomon using the cube's transform
+
+    draw_complete();
 }
 
 // called by the Qt GUI system, to allow OpenGL to respond to widget resizing
@@ -163,7 +156,7 @@ void Renderer::mouseMoveEvent(QMouseEvent * event)
 {
     QTextStream cout(stdout);
     cout << "Stub: Motion at " << event->x() << ", " << event->y() << ".\n";
-    editValue(event->x() - p_mouseX);
+    modifyValue(event->x() - p_mouseX);
 
     if (editMode == VIEWPORT)
     {
@@ -193,7 +186,7 @@ void Renderer::mouseMoveEvent(QMouseEvent * event)
 
 void Renderer::drawViewport()
 {
-    // Draw viewport
+    // Drawing viewport bounds
     draw_line(m_viewport[0], Point2D(m_viewport[0][0], m_viewport[1][1]));
     draw_line(m_viewport[0], Point2D(m_viewport[1][0], m_viewport[0][1]));
     draw_line(m_viewport[1], Point2D(m_viewport[1][0], m_viewport[0][1]));
@@ -202,19 +195,19 @@ void Renderer::drawViewport()
 
 void Renderer::drawGnomon(Matrix4x4 *model_matrix)
 {
-    Colour colours[] = {
+    Colour colours[] = {    // 3 colours of the gnomon lines
         Colour(1,0,0),
         Colour(0,1,0),
         Colour(0,0,1)
     };
 
-    Point3D p1 = (*model_matrix) * g_world[0];
+    Point3D p1 = (*model_matrix) * g_gnomon[0];
 
-    for (int i = 1; i < 4; i++)
+    for (int i = 1; i < 4; i++)         // draw 3 lines between the 4 points
     {
         set_colour(colours[i - 1]);
 
-        Point3D p2 = (*model_matrix) * g_world[i];
+        Point3D p2 = (*model_matrix) * g_gnomon[i];
 
         draw_line_3d(p1, p2);
     }
@@ -235,11 +228,11 @@ void Renderer::draw_line_3d(Point3D a, Point3D b)
     double view_t = ndc_view_1[1];
     double view_b = ndc_view_2[1];
 
-    Point3D plane[] = {Point3D(0,0,p_view[1]), Point3D(0,0,p_view[2]),
+    Point3D plane[] = {Point3D(0,0,p_view[1]), Point3D(0,0,p_view[2]),  // points on the bounding planes
                        Point3D(0,view_t,0), Point3D(0,view_b,0),
                        Point3D(view_r,0,0), Point3D(view_l,0,0)};
 
-    Vector3D normal[] = {Vector3D(0,0,1), Vector3D(0,0,-1),
+    Vector3D normal[] = {Vector3D(0,0,1), Vector3D(0,0,-1),             // normals of the bounding planes
                          Vector3D(0,-1,0), Vector3D(0,1,0),
                          Vector3D(-1,0,0), Vector3D(1,0,0)};
 
@@ -254,37 +247,34 @@ void Renderer::draw_line_3d(Point3D a, Point3D b)
     // clip near and far planes
     for (int i = 0; i < 2; i++)
     {
-        // check if outside
+        Vector3D n = normal[i];
+        Point3D p = plane[i];
+        double t = (a - p).dot(n) / (a - b).dot(n);
+
+        float dotProd_a = (a - p).dot(n);
+        float dotProd_b = (b - p).dot(n);
+
+        if (dotProd_a > 0 && dotProd_b > 0)         // both inside, line is fine
         {
-            Vector3D n = normal[i];
-            Point3D p = plane[i];
-            double t = (a - p).dot(n) / (a - b).dot(n);
+            continue;
+        }
+        else if (dotProd_a < 0 && dotProd_b < 0)    // both outside, dont draw this line
+        {
+            skipLine = true;
+            break;
+        }
+        else if (dotProd_a < 0 || dotProd_b < 0)    // only one is outside
+        {
+            t = dotProd_a / (dotProd_a - dotProd_b);
+            pt_i = a + t * (b - a);
 
-            float dotProd_a = (a - p).dot(n);
-            float dotProd_b = (b - p).dot(n);
-
-            if (dotProd_a > 0 && dotProd_b > 0)         // both inside, line is fine
+            if (dotProd_a < 0)  // replace with intersection point
             {
-                continue;
+                a = pt_i;
             }
-            else if (dotProd_a < 0 && dotProd_b < 0)    // both outside, dont draw this line
+            else
             {
-                skipLine = true;
-                break;
-            }
-            else if (dotProd_a < 0 || dotProd_b < 0)    // only one is outside
-            {
-                t = dotProd_a / (dotProd_a - dotProd_b);
-                pt_i = a + t * (b - a);
-
-                if (dotProd_a < 0)  // replace with intersection point
-                {
-                    a = pt_i;
-                }
-                else
-                {
-                    b = pt_i;
-                }
+                b = pt_i;
             }
         }
     }
@@ -306,36 +296,34 @@ void Renderer::draw_line_3d(Point3D a, Point3D b)
     for (int i = 2; i < 6; i++)
     {
         // check if outside
+        Vector3D n = normal[i];
+        Point3D p = plane[i];
+        double t = (a - p).dot(n) / (a - b).dot(n);
+
+        float dotProd_a = (a - p).dot(n);
+        float dotProd_b = (b - p).dot(n);
+
+        if (dotProd_a > 0 && dotProd_b > 0)         // both inside, line is fine
         {
-            Vector3D n = normal[i];
-            Point3D p = plane[i];
-            double t = (a - p).dot(n) / (a - b).dot(n);
+            continue;
+        }
+        else if (dotProd_a < 0 && dotProd_b < 0)    // both outside, dont draw this line
+        {
+            skipLine = true;
+            break;
+        }
+        else if (dotProd_a < 0 || dotProd_b < 0)    // only one is outside
+        {
+            t = dotProd_a / (dotProd_a - dotProd_b);
+            pt_i = a + t * (b - a);
 
-            float dotProd_a = (a - p).dot(n);
-            float dotProd_b = (b - p).dot(n);
-
-            if (dotProd_a > 0 && dotProd_b > 0)         // both inside, line is fine
+            if (dotProd_a < 0)          // replace with intersection point
             {
-                continue;
+                a = pt_i;
             }
-            else if (dotProd_a < 0 && dotProd_b < 0)    // both outside, dont draw this line
+            if (dotProd_b < 0)
             {
-                skipLine = true;
-                break;
-            }
-            else if (dotProd_a < 0 || dotProd_b < 0)    // only one is outside
-            {
-                t = dotProd_a / (dotProd_a - dotProd_b);
-                pt_i = a + t * (b - a);
-
-                if (dotProd_a < 0)          // replace with intersection point
-                {
-                    a = pt_i;
-                }
-                if (dotProd_b < 0)
-                {
-                    b = pt_i;
-                }
+                b = pt_i;
             }
         }
     }
@@ -349,7 +337,7 @@ void Renderer::draw_line_3d(Point3D a, Point3D b)
    draw_line(Point2D(a[0], a[1]), Point2D(b[0], b[1]));
 }
 
-void Renderer::drawBox()
+void Renderer::drawCube()
 {
     std::vector<Line3D> demoLines = m_cube.getLines();
     Matrix4x4 model_matrix = m_cube.getTransform();
@@ -364,40 +352,40 @@ void Renderer::drawBox()
     }
 }
 
-void Renderer::editValue(int value)
+void Renderer::modifyValue(int value)
 {
     Vector3D delta;
     float d = (float)value / 100;
 
-    if (mouseButtons & Qt::LeftButton)      // LB rotates along x-axis
+    if (mouseButtons & Qt::LeftButton)      // LB modifies along x-axis   (fov if viewport mode)
     {
         delta[0] = d;
     }
-    if (mouseButtons & Qt::MiddleButton)    // MB rotates along y-axis
+    if (mouseButtons & Qt::MiddleButton)    // MB modifies  along y-axis  (near-plane if viewport mode)
     {
         delta[1] = d;
     }
-    if (mouseButtons & Qt::RightButton)     // RB rotates along z-axis
+    if (mouseButtons & Qt::RightButton)     // RB modifies  along z-axis  (far-plane if viewport mode)
     {
         delta[2] = d;
     }
 
-    Matrix4x4 modelTrans;
+    Matrix4x4 modelTrans;       // the transforms we will compose onto model / gnomon
     Matrix4x4 gnomonTrans;
 
     switch(editMode)
     {
     case VIEW_R:
-        m_view = rotation(delta[2], 'z')
+        m_view = rotation(delta[2], 'z')            // add the rotations to m_view
                 * rotation(delta[1], 'y')
                 * rotation(delta[0], 'x') * m_view;
         break;
     case VIEW_T:
-        m_view = translation(delta) * m_view;
+        m_view = translation(delta) * m_view;       // add the translate to m_view
         break;
     case VIEW_P:
-        p_view = p_view + delta;
-        update_projection();
+        p_view = p_view + delta;                    // change the parameters of the perspective transform (fov, near, far)
+        update_projection();                        // update m_projection
         break;
     case MODEL_R:
         gnomonTrans = modelTrans = rotation(delta[2], 'z') * rotation(delta[1], 'y') * rotation(delta[0], 'x');
@@ -408,17 +396,14 @@ void Renderer::editValue(int value)
     case MODEL_T:
         gnomonTrans = modelTrans = translation(delta);
         break;
-    case VIEWPORT:
-        update_view();
-        break;
     }
-    m_cube.appendTransform(modelTrans);
-    m_cubeGnomon = m_cubeGnomon * gnomonTrans;
+    m_cube.appendTransform(modelTrans);             // add transform to cube transform
+    m_cubeGnomon = m_cubeGnomon * gnomonTrans;      // and add to gnomon transform
 
-    invalidate();
+    invalidate();                                   // trigger window update
 }
 
-void Renderer::setMode(EditMode mode)
+void Renderer::setMode(EditMode mode)       // public set method for editmode
 {
     editMode = mode;
 }

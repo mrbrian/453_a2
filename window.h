@@ -29,24 +29,24 @@ private:
 
 	// Menu items and actions
     QMenu * mFileMenu;
-    QAction * mResetAction;
-    QAction * mQuitAction;
+    QAction * mResetAction;     // reset the all transforms & settings
+    QAction * mQuitAction;      // quit the program
 
-    QActionGroup * mModeGroup;
-    QMenu * mModeMenu;
-    QMenu * mModelMenu;
-    QMenu * mViewMenu;
-    QAction * mVRotateAction;
-    QAction * mVTransAction;
-    QAction * mVPerspAction;
+    QActionGroup * mModeGroup;  // checkbox group
+    QMenu * mModeMenu;          // mode menu
+    QMenu * mModelMenu;         // model sub-menu
+    QMenu * mViewMenu;          // view sub-menu
+    QAction * mVRotateAction;   // Rotate view
+    QAction * mVTransAction;    // Translate view
+    QAction * mVPerspAction;    // View perspective
 
-    QAction * mMRotateAction;
-    QAction * mMTransAction;
-    QAction * mMScaleAction;
+    QAction * mMRotateAction;   // Rotate model
+    QAction * mMTransAction;    // Translate model
+    QAction * mMScaleAction;    // Scale model
 
-    QAction * mViewportAction;
+    QAction * mViewportAction;  // Viewport
 
-    QLabel * modeLabel;
+    QLabel * modeLabel;         // current model label
 
     // helper function for creating actions
 	void createActions();
