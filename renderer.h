@@ -85,8 +85,7 @@ private:
 
     // *** Fill me in ***
     // You will want to declare some more matrices here
-    Cube m_cube;
-    Matrix4x4 m_cubeGnomon;     // transform for cube's gnomon
+    Cube m_cube;                // the cube
     Matrix4x4 m_screenCoords;   // transform for converting NDC to screencoords
     Point3D * g_gnomon;         // verts of the gnomon
 

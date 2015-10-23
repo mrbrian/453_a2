@@ -56,7 +56,6 @@ void Renderer::reset_view()
     update_projection();
 
     m_cube.resetTransform();
-    m_cubeGnomon = Matrix4x4();
 
     m_view = *new Matrix4x4();
     m_view = translation(t_view) * m_view;
@@ -108,7 +107,8 @@ void Renderer::paintGL()
 
     set_colour(Colour(0.1, 0.1, 0.1));
     drawCube();                         // draw cube
-    drawGnomon(&m_cubeGnomon);          // draw gnomon using the cube's transform
+    m = m_cube.getGnomonTransform();
+    drawGnomon(&m);          // draw gnomon using the cube's transform
 
     draw_complete();
 }
@@ -388,17 +388,21 @@ void Renderer::modifyValue(int value)
         update_projection();                        // update m_projection
         break;
     case MODEL_R:
-        gnomonTrans = modelTrans = rotation(delta[2], 'z') * rotation(delta[1], 'y') * rotation(delta[0], 'x');
+        gnomonTrans = modelTrans = rotation(delta[2], 'z')  // add the rotations to gnomon and cube transforms
+                                * rotation(delta[1], 'y')
+                                * rotation(delta[0], 'x');
         break;
     case MODEL_S:
-        modelTrans = scaling(Vector3D(1,1,1) + delta);
+        {
+            Matrix4x4 scaleTrans = scaling(Vector3D(1,1,1) + delta);
+            m_cube.scale(scaleTrans);                   // apply scale separately (getTransform will append it on request)
+        }
         break;
     case MODEL_T:
-        gnomonTrans = modelTrans = translation(delta);
+        gnomonTrans = modelTrans = translation(delta);  // apply translate transform to gnomon and cube
         break;
     }
-    m_cube.appendTransform(modelTrans);             // add transform to cube transform
-    m_cubeGnomon = m_cubeGnomon * gnomonTrans;      // and add to gnomon transform
+    m_cube.appendTransform(modelTrans);             // add transform to cube transform  (will be identity if only scaling was performed)
 
     invalidate();                                   // trigger window update
 }

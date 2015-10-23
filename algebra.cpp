@@ -193,6 +193,11 @@ Cube::~Cube() { }
 
 Matrix4x4 Cube::getTransform() const
 {
+    return this->transform_ * scale_;
+}
+
+Matrix4x4 Cube::getGnomonTransform() const
+{
     return this->transform_;
 }
 
@@ -204,6 +209,11 @@ void Cube::resetTransform()
 void Cube::appendTransform(const Matrix4x4 &xform)
 {
     this->transform_ = this->transform_ * xform;
+}
+
+void Cube::scale(const Matrix4x4 &xform)
+{
+    this->scale_ = this->scale_ * xform;
 }
 
 std::vector<Line3D> Cube::getLines()

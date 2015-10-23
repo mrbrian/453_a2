@@ -564,13 +564,16 @@ public:
     ~Cube();
 
     Matrix4x4 getTransform() const;
+    Matrix4x4 getGnomonTransform() const;
     void resetTransform();
     void appendTransform(const Matrix4x4 &xform);
+    void scale(const Matrix4x4 &xform);
 
     std::vector<Line3D> getLines();
 
 private:
     std::vector<Point3D> verts_;
+    Matrix4x4 scale_;
     Matrix4x4 transform_;
 };
 

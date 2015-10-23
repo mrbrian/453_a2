@@ -6,7 +6,6 @@
 Matrix4x4 rotation(double angle, char axis)
 {
   Matrix4x4 r;
-  // Fill me in!
   switch (axis)
   {
     case 'x':
@@ -36,7 +35,6 @@ Matrix4x4 rotation(double angle, char axis)
 Matrix4x4 translation(const Vector3D& displacement)
 {
   Matrix4x4 t;
-  // Fill me in!
   t[0][3] = displacement[0];
   t[1][3] = displacement[1];
   t[2][3] = displacement[2];
@@ -48,7 +46,6 @@ Matrix4x4 translation(const Vector3D& displacement)
 Matrix4x4 scaling(const Vector3D& scale)
 {
   Matrix4x4 s;
-  // Fill me in!
   s[0][0] = scale[0];
   s[1][1] = scale[1];
   s[2][2] = scale[2];
