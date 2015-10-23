@@ -204,6 +204,7 @@ Matrix4x4 Cube::getGnomonTransform() const
 void Cube::resetTransform()
 {
     this->transform_ = Matrix4x4();
+    this->scale_ = Matrix4x4();
 }
 
 void Cube::appendTransform(const Matrix4x4 &xform)
