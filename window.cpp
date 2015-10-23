@@ -12,7 +12,7 @@ Window::Window(QWidget * parent) :
 
     // Create the main drawing object
     renderer = new Renderer();
-    renderer->setMinimumSize(300, 300);
+    renderer->setMinimumSize(400, 400);
 
     // Setup the application's widget collection
     QVBoxLayout * layout = new QVBoxLayout();
