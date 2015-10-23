@@ -21,31 +21,41 @@ To run the program, on the terminal enter the following command:
 <Insert a precise user manual on how to interact with the program; eg. 
 short-cut keys, mouse movements, menu items, widgets, etc.>
 
-File Menu
+[File Menu]
 	Reset (A) - Resets the model, view, and viewport.
 	Quit (Q) - Quits the application
 
-Mode Menu
-	(View submenu)
-		Rotate (O) - LMB: x-axis, MMB: y-axis, RMB: z-axis
-		Translate (N) - LMB: x-axis, MMB: y-axis, RMB: z-axis
-		Perspective (P) - LMB: FOV, MMB: near z-plane, RMB: far z-plane
-	(Model submenu)
-		Rotate (R) - LMB: x-axis, MMB: y-axis, RMB: z-axis
-		Translate (T) - LMB: x-axis, MMB: y-axis, RMB: z-axis
-		Scale (S) - LMB: x-axis, MMB: y-axis, RMB: z-axis
-	Viewport (V)
+[Mode Menu]
+	[View submenu]
+		Rotate (O) - Rotate view 
+			LMB: x-axis, MMB: y-axis, RMB: z-axis
+			
+		Translate (N) - Translate view 
+			LMB: x-axis, MMB: y-axis, RMB: z-axis
+			
+		Perspective (P) - Change FOV, near plane or far plane
+			LMB: FOV, MMB: near z-plane, RMB: far z-plane
+			
+	[Model submenu]
+		Rotate (R) - Rotate model
+			LMB: x-axis, MMB: y-axis, RMB: z-axis
+			
+		Translate (T) - Translate model
+			LMB: x-axis, MMB: y-axis, RMB: z-axis
+			
+		Scale (S) - Scale model
+			LMB: x-axis, MMB: y-axis, RMB: z-axis
+			
+	Viewport (V) - Adjust the clipping area  
+		Click and drag any mouse button.
 
 
 == 3. ALGORITHMS and DESIGN DECISIONS: ===
 
-<Insert a description of the algorithms created and design decisions taken>
-
-Used a single Matrix4x4 instead of storing scale, rotation, translation of the cube separately since 
-the assignment says not to limit the amount of accumulated transforms.
-
-//Stored the cube gnomon transform separate from cube class.
-
+Primarily used a single Matrix4x4 instead of storing the rotation, translation values separately since the assignment implies that we should let transforms accumulate.  
+However, the scaling transform is kept separate so it can be appended before applying any rotations and transformations.  (or else it resulted in non-axis stretching)
+A transform is used to convert from NDC space to screen space, and the inverted matrix is used to go in the other direction.
+View and Model submenus were included since the example assignment video also had them.
 
 === 4. FILES SUBMITTED: ===
 
@@ -64,11 +74,9 @@ README
 
 === 5. PROGRAM ASSUMPTIONS: ===
 
-It is ok to have View and Model submenus. (as seen in assignment example video)
+We do not need to handle resizing the actual program window (the assignment does not mention it).
 
 === 6. DECLARATION AND IMAGE PERMISSION: ===
-
-<Initial the following:>
 
 _BY_ I have read the regulations regarding plagarism. I affirm with my initials
 that I have worked on my own solution to this assignment, and the code I am

@@ -15,7 +15,7 @@ Renderer::Renderer(QWidget *parent)
 {
     editMode = MODEL_R;
 
-    g_gnomon = new Point3D[4]{     // the 4 points of the gnomon
+    g_gnomon = new Point3D[4]{     // define the 4 points of the gnomon
         *new Point3D(0,0,0),
         *new Point3D(0.5,0,0),
         *new Point3D(0,0.5,0),
@@ -136,7 +136,7 @@ void Renderer::mousePressEvent(QMouseEvent * event)
     // define new viewport coords
     if (editMode == VIEWPORT)
     {
-        m_viewport[0] = Point2D(event->x(), event->y());
+        m_viewport[0] = Point2D(event->x(), event->y());    // start a new viewport box
         m_viewport[1] = Point2D(event->x(), event->y());
     }
 }
@@ -163,8 +163,8 @@ void Renderer::mouseMoveEvent(QMouseEvent * event)
         int c_x = event->x();
         int c_y = event->y();
 
-        if (c_x > m_viewport[0][0])
-        {
+        if (c_x > m_viewport[0][0]) // just trying to handle different mouse dragging scenarios
+        {                           // ie. dragging from right to left, down to up
             m_viewport[1][0] = c_x;
         }
         else
