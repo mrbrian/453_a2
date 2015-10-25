@@ -77,6 +77,7 @@ renderer.h
 window.cpp
 window.h
 README
+brian.yee_a2_1.png
 
 === 5. PROGRAM ASSUMPTIONS: ===
 
@@ -93,7 +94,7 @@ submitting is my own.
 _X_ I grant the instructor and/or TAs permission to use images submitted and/or
    assignment screenshots for future CPSC453 courses.
 
-_X_ If permission has been granted above, I would prefer the images to remain 
+__ If permission has been granted above, I would prefer the images to remain 
    annonymous. <Otherwise credit will be given, as is due>
 
 __
