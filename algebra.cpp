@@ -159,65 +159,119 @@ Point3D &Line3D::getP2()
     return p2_;
 }
 
-Cube::Cube()
+Shape::Shape(ShapeType sType)
 {
-    verts_.push_back(Point3D(-1,1,-1));     // populate vertex list
-    verts_.push_back(Point3D(-1,1,1));
-    verts_.push_back(Point3D(-1,1,1));
-    verts_.push_back(Point3D(1,1,1));
-    verts_.push_back(Point3D(1,1,1));
-    verts_.push_back(Point3D(1,1,-1));
-    verts_.push_back(Point3D(1,1,-1));
-    verts_.push_back(Point3D(-1,1,-1));
+    switch(sType)                           // populate vertex list
+    {
+    case CYLINDER:
+        {
+            float seg = 10;
+            for (int i = 0; i < seg; i++)
+            {
+                float rad = 2.0 * M_PI / seg * i;
+                float x1 = cos(rad);
+                float z1 = sin(rad);
+                verts_.push_back(Point3D(x1,-1,z1));
+                verts_.push_back(Point3D(x1,1, z1));
+            }
 
-    verts_.push_back(Point3D(-1,-1,-1));
-    verts_.push_back(Point3D(-1,-1,1));
-    verts_.push_back(Point3D(-1,-1,1));
-    verts_.push_back(Point3D(1,-1,1));
-    verts_.push_back(Point3D(1,-1,1));
-    verts_.push_back(Point3D(1,-1,-1));
-    verts_.push_back(Point3D(1,-1,-1));
-    verts_.push_back(Point3D(-1,-1,-1));
+            for (int i = 0; i <= seg; i++)
+            {
+                float rad1 = 2.0 * M_PI / seg * i;
+                float x1 = cos(rad1);
+                float z1 = sin(rad1);
 
-    verts_.push_back(Point3D(-1,1,-1));
-    verts_.push_back(Point3D(-1,-1,-1));
-    verts_.push_back(Point3D(-1,1,1));
-    verts_.push_back(Point3D(-1,-1,1));
-    verts_.push_back(Point3D(1,1,1));
-    verts_.push_back(Point3D(1,-1,1));
-    verts_.push_back(Point3D(1,1,-1));
-    verts_.push_back(Point3D(1,-1,-1));
+                float rad2 = 2.0 * M_PI / seg * (i + 1);
+                float x2 = cos(rad2);
+                float z2 = sin(rad2);
+
+                verts_.push_back(Point3D(x1,1,z1));
+                verts_.push_back(Point3D(x2,1,z2));
+
+                verts_.push_back(Point3D(x1,-1,z1));
+                verts_.push_back(Point3D(x2,-1,z2));
+            }
+        }
+        break;
+    case PYRAMID:
+        verts_.push_back(Point3D(-1,-1,-1));    // populate vertex list
+        verts_.push_back(Point3D(-1,-1,1));
+        verts_.push_back(Point3D(-1,-1,1));
+        verts_.push_back(Point3D(1,-1,1));
+        verts_.push_back(Point3D(1,-1,1));
+        verts_.push_back(Point3D(1,-1,-1));
+        verts_.push_back(Point3D(1,-1,-1));
+        verts_.push_back(Point3D(-1,-1,-1));
+
+        verts_.push_back(Point3D(0,1,0));
+        verts_.push_back(Point3D(-1,-1,-1));
+        verts_.push_back(Point3D(0,1,0));
+        verts_.push_back(Point3D(-1,-1,1));
+        verts_.push_back(Point3D(0,1,0));
+        verts_.push_back(Point3D(1,-1,1));
+        verts_.push_back(Point3D(0,1,0));
+        verts_.push_back(Point3D(1,-1,-1));
+        break;
+    case CUBE:
+        verts_.push_back(Point3D(-1,1,-1));     // populate vertex list
+        verts_.push_back(Point3D(-1,1,1));
+        verts_.push_back(Point3D(-1,1,1));
+        verts_.push_back(Point3D(1,1,1));
+        verts_.push_back(Point3D(1,1,1));
+        verts_.push_back(Point3D(1,1,-1));
+        verts_.push_back(Point3D(1,1,-1));
+        verts_.push_back(Point3D(-1,1,-1));
+
+        verts_.push_back(Point3D(-1,-1,-1));
+        verts_.push_back(Point3D(-1,-1,1));
+        verts_.push_back(Point3D(-1,-1,1));
+        verts_.push_back(Point3D(1,-1,1));
+        verts_.push_back(Point3D(1,-1,1));
+        verts_.push_back(Point3D(1,-1,-1));
+        verts_.push_back(Point3D(1,-1,-1));
+        verts_.push_back(Point3D(-1,-1,-1));
+
+        verts_.push_back(Point3D(-1,1,-1));
+        verts_.push_back(Point3D(-1,-1,-1));
+        verts_.push_back(Point3D(-1,1,1));
+        verts_.push_back(Point3D(-1,-1,1));
+        verts_.push_back(Point3D(1,1,1));
+        verts_.push_back(Point3D(1,-1,1));
+        verts_.push_back(Point3D(1,1,-1));
+        verts_.push_back(Point3D(1,-1,-1));
+        break;
+    }
 }
 
-Cube::~Cube() { }
+Shape::~Shape() { }
 
-Matrix4x4 Cube::getTransform() const
+Matrix4x4 Shape::getTransform() const
 {
     return this->transform_ * scale_;
 }
 
-Matrix4x4 Cube::getGnomonTransform() const
+Matrix4x4 Shape::getGnomonTransform() const
 {
     return this->transform_;
 }
 
-void Cube::resetTransform()
+void Shape::resetTransform()
 {
     this->transform_ = Matrix4x4();
     this->scale_ = Matrix4x4();
 }
 
-void Cube::appendTransform(const Matrix4x4 &xform)
+void Shape::appendTransform(const Matrix4x4 &xform)
 {
     this->transform_ = this->transform_ * xform;
 }
 
-void Cube::scale(const Matrix4x4 &xform)
+void Shape::scale(const Matrix4x4 &xform)
 {
     this->scale_ = this->scale_ * xform;
 }
 
-std::vector<Line3D> Cube::getLines()
+std::vector<Line3D> Shape::getLines()
 {
     std::vector<Line3D> lines;
 

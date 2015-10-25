@@ -557,11 +557,13 @@ private:
     Point3D p1_, p2_;
 };
 
-class Cube
+enum ShapeType {CUBE, PYRAMID, CYLINDER};
+
+class Shape
 {
 public:
-    Cube();
-    ~Cube();
+    Shape(ShapeType sType);
+    ~Shape();
 
     Matrix4x4 getTransform() const;         // return transform_ * scale_
     Matrix4x4 getGnomonTransform() const;   // return only transform_

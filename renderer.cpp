@@ -22,6 +22,7 @@ Renderer::Renderer(QWidget *parent)
         *new Point3D(0,0,0.5)
     };
 
+    m_shape = 0;
     reset_view();
     update_projection();
 }
@@ -55,11 +56,14 @@ void Renderer::reset_view()
     p_view = Vector3D(DEF_VIEW_FOV, DEF_VIEW_NEAR, DEF_VIEW_FAR);       // use default values
     update_projection();
 
-    m_cube.resetTransform();
+    if (m_shape)
+        m_shape->resetTransform();
 
     m_view = *new Matrix4x4();
     m_view = translation(t_view) * m_view;
     setupViewport();
+    clearShapeList();
+    addCube();
     invalidate();           // trigger window update
 }
 
@@ -105,10 +109,7 @@ void Renderer::paintGL()
     Matrix4x4 m;
     drawGnomon(&m);         // m is the world transform  (identity since never changes)
 
-    set_colour(Colour(0.1, 0.1, 0.1));
-    drawCube();                         // draw cube
-    m = m_cube.getGnomonTransform();
-    drawGnomon(&m);          // draw gnomon using the cube's transform
+    drawShapeList();         // draw shapes
 
     draw_complete();
 }
@@ -337,10 +338,23 @@ void Renderer::draw_line_3d(Point3D a, Point3D b)
    draw_line(Point2D(a[0], a[1]), Point2D(b[0], b[1]));
 }
 
-void Renderer::drawCube()
+void Renderer::drawShapeList()      // iterate shape list and draw
 {
-    std::vector<Line3D> demoLines = m_cube.getLines();
-    Matrix4x4 model_matrix = m_cube.getTransform();
+    for(std::vector<Shape*>::iterator it = m_shapeList.begin(); it != m_shapeList.end(); ++it)
+    {
+        set_colour(Colour(0.1, 0.1, 0.1));  // black lines
+
+        Shape * cube = (*it);
+        drawShape(cube);
+        Matrix4x4 gt = cube->getGnomonTransform();
+        drawGnomon(&gt);          // draw gnomon using the cube's transform
+    }
+}
+
+void Renderer::drawShape(Shape * cube)
+{
+    std::vector<Line3D> demoLines = cube->getLines();
+    Matrix4x4 model_matrix = cube->getTransform();
 
     for(std::vector<Line3D>::iterator it = demoLines.begin(); it != demoLines.end(); ++it)
     {
@@ -395,14 +409,14 @@ void Renderer::modifyValue(int value)
     case MODEL_S:
         {
             Matrix4x4 scaleTrans = scaling(Vector3D(1,1,1) + delta);
-            m_cube.scale(scaleTrans);                   // apply scale separately (getTransform will append it on request)
+            m_shape->scale(scaleTrans);                   // apply scale separately (getTransform will append it on request)
         }
         break;
     case MODEL_T:
         gnomonTrans = modelTrans = translation(delta);  // apply translate transform to gnomon and cube
         break;
     }
-    m_cube.appendTransform(modelTrans);             // add transform to cube transform  (will be identity if only scaling was performed)
+    m_shape->appendTransform(modelTrans);             // add transform to cube transform  (will be identity if only scaling was performed)
 
     invalidate();                                   // trigger window update
 }
@@ -412,3 +426,34 @@ void Renderer::setMode(EditMode mode)       // public set method for editmode
     editMode = mode;
 }
 
+void Renderer::addCube()        // add a new cube to the scene
+{
+    m_shape = new Shape(CUBE);
+    m_shapeList.push_back(m_shape);
+    invalidate();               // force draw
+}
+
+void Renderer::addPyramid()        // add a new pyramid to the scene
+{
+    m_shape = new Shape(PYRAMID);
+    m_shapeList.push_back(m_shape);
+    invalidate();               // force draw
+}
+
+void Renderer::addCylinder()        // add a new cylinder to the scene
+{
+    m_shape = new Shape(CYLINDER);
+    m_shapeList.push_back(m_shape);
+    invalidate();               // force draw
+}
+
+void Renderer::clearShapeList()     // clear the list and free all the cube memory
+{
+    while (!m_shapeList.empty())
+    {
+        std::vector<Shape*>::iterator it = m_shapeList.end();
+        it--;
+        delete((*it));
+        m_shapeList.erase(it);
+    }
+}

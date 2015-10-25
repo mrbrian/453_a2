@@ -46,6 +46,11 @@ private:
 
     QAction * mViewportAction;  // Viewport
 
+    QMenu * mBonusMenu;         // bonuses menu
+    QAction * mAddCubeAction;       // add another cube
+    QAction * mAddPyrAction;       // add another pyramid
+    QAction * mAddCylAction;       // add another cylinder
+
     QLabel * modeLabel;         // current model label
 
     // helper function for creating actions

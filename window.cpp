@@ -34,7 +34,7 @@ Window::Window(QWidget * parent) :
     mFileMenu->addAction(mQuitAction);  // add quitting
 
     // Setup the mode menu
-    mModeMenu = menuBar()->addMenu(tr("&Mode"));
+    mModeMenu = menuBar()->addMenu(tr("&Mode"));    
     mViewMenu = mModeMenu->addMenu(tr("&View"));
     mModelMenu = mModeMenu->addMenu(tr("&Model"));
     // Add viewport rotate, translate, perspective to View submenu
@@ -48,6 +48,12 @@ Window::Window(QWidget * parent) :
     mModelMenu->addAction(mMScaleAction);
 
     mModeMenu->addAction(mViewportAction);  // add viewport editing
+
+    // extras menu
+    mBonusMenu = menuBar()->addMenu(tr("&Bonus"));
+    mBonusMenu->addAction(mAddCubeAction);
+    mBonusMenu->addAction(mAddPyrAction);
+    mBonusMenu->addAction(mAddCylAction);
 
     // Setup the mode label
     modeLabel = new QLabel(this);
@@ -136,6 +142,24 @@ void Window::createActions()
     mViewportAction->setShortcut(QKeySequence(Qt::Key_V));
     mViewportAction->setStatusTip(tr("Adjust the viewport"));
     mModeGroup->addAction(mViewportAction);
+
+    // add another cube
+    mAddCubeAction = new QAction(tr("&Add Cube"), this);
+    mAddCubeAction->setShortcut(QKeySequence(Qt::Key_1));
+    mAddCubeAction->setStatusTip(tr("Adds a cube"));
+    connect(mAddCubeAction, SIGNAL(triggered()), renderer, SLOT(addCube()));
+
+    // add another pyramid
+    mAddPyrAction = new QAction(tr("&Add Pyramid"), this);
+    mAddPyrAction->setShortcut(QKeySequence(Qt::Key_2));
+    mAddPyrAction->setStatusTip(tr("Adds a pyramid"));
+    connect(mAddPyrAction, SIGNAL(triggered()), renderer, SLOT(addPyramid()));
+
+    // add another cylinder
+    mAddCylAction = new QAction(tr("&Add Cylinder"), this);
+    mAddCylAction->setShortcut(QKeySequence(Qt::Key_3));
+    mAddCylAction->setStatusTip(tr("Adds a cylinder"));
+    connect(mAddCylAction, SIGNAL(triggered()), renderer, SLOT(addCylinder()));
 }
 
 // Forward the editing mode to the renderer, and updates the mode text label

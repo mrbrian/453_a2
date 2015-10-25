@@ -42,6 +42,9 @@ public slots:
     // Restore all the transforms and perspective parameters to their
     // original state. Set the viewport to its initial size.
     void reset_view();
+    void addCube();
+    void addPyramid();
+    void addCylinder();
 
 protected:
 
@@ -77,15 +80,18 @@ protected:
 private:
     void draw_line_3d(Point3D a, Point3D b);    // draw a 3D line between 2 points, does projection & clipping
     void update_projection();                   // update the perspective projection
-    void drawCube();                             // draw the cube
+    void drawShapeList();                        // draw lots of shapes
+    void drawShape(Shape * cube);                 // draw a single shape
     void drawGnomon(Matrix4x4 *model_matrix);   // draw a gnomon using a given model transform
     void setupViewport();               // initialize viewport settings
     void drawViewport();                // draw the viewport bounds
     void modifyValue(int value);        // takes a mouse movement and modifies the appropriate value
+    void clearShapeList();
 
     // *** Fill me in ***
     // You will want to declare some more matrices here
-    Cube m_cube;                // the cube
+    Shape * m_shape;                  // pointer to the last shape added
+    std::vector<Shape*> m_shapeList;  // shape pointer list
     Matrix4x4 m_screenCoords;   // transform for converting NDC to screencoords
     Point3D * g_gnomon;         // verts of the gnomon
 
