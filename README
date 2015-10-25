@@ -22,7 +22,7 @@ To run the program, on the terminal enter the following command:
 short-cut keys, mouse movements, menu items, widgets, etc.>
 
 [File Menu]
-	Reset (A) - Resets the model, view, and viewport.
+	Reset (A) - Resets the scene, view, and viewport.
 	Quit (Q) - Quits the application
 
 [Mode Menu]
@@ -48,6 +48,10 @@ short-cut keys, mouse movements, menu items, widgets, etc.>
 			
 	Viewport (V) - Adjust the clipping area  
 		Click and drag any mouse button.
+		
+	Add Cube (1) - Add a cube to the scene
+	Add Pyramid (2) - Add a pyramid to the scene
+	Add Cylinder (3) - Add a cylinder to the scene
 
 
 == 3. ALGORITHMS and DESIGN DECISIONS: ===
@@ -56,6 +60,8 @@ Primarily used a single Matrix4x4 instead of storing the rotation, translation v
 However, the scaling transform is kept separate so it can be appended before applying any rotations and transformations.  (or else it resulted in non-axis stretching)
 A transform is used to convert from NDC space to screen space, and the inverted matrix is used to go in the other direction.
 View and Model submenus were included since the example assignment video also had them.
+
+Bonuses:  Can add different / multiple shapes to the scene.
 
 === 4. FILES SUBMITTED: ===
 
